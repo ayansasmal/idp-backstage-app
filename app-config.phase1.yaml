@@ -1,0 +1,249 @@
+# Phase 1 IDP Platform Configuration
+# This configuration enables AWS Cognito authentication, RBAC permissions,
+# centralized logging, and Argo Workflows integration
+
+app:
+  title: IDP Backstage Platform
+  baseUrl: http://localhost:3000
+
+organization:
+  name: Your Company
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", "http:", "https:"]
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: ${POSTGRES_DB}
+
+# Phase 1: Authentication Configuration
+auth:
+  providers:
+    # AWS Cognito OIDC Provider
+    awsCognito:
+      userPoolId: ${AWS_COGNITO_USER_POOL_ID}
+      clientId: ${AWS_COGNITO_CLIENT_ID}
+      clientSecret: ${AWS_COGNITO_CLIENT_SECRET}
+      region: ${AWS_COGNITO_REGION}
+      domain: ${AWS_COGNITO_DOMAIN}
+      claimsMapping:
+        displayName: name
+        email: email
+        username: cognito:username
+        groups: cognito:groups
+
+    # Guest provider (for development)
+    guest:
+      dangerouslyAllowOutsideDevelopment: false
+
+# Phase 1: Enhanced Permissions with RBAC
+permission:
+  enabled: true
+  rbac:
+    # Define roles and their permissions
+    roles:
+      - name: super-admin
+        displayName: Super Administrator
+        description: Full administrative access to all resources
+        permissions: ["*"]
+
+      - name: platform-admin
+        displayName: Platform Administrator
+        description: Platform administration and user management
+        permissions:
+          - "catalog.entity.create"
+          - "catalog.entity.delete"
+          - "catalog.entity.refresh"
+          - "scaffolder.action.execute"
+          - "scaffolder.task.read"
+          - "scaffolder.task.create"
+          - "policy.entity.read"
+          - "policy.entity.create"
+
+      - name: developer
+        displayName: Developer
+        description: Standard developer access for creating and managing services
+        permissions:
+          - "catalog.entity.read"
+          - "catalog.entity.create"
+          - "scaffolder.template.parameter.read"
+          - "scaffolder.action.execute"
+          - "scaffolder.task.read"
+          - "scaffolder.task.create"
+          - "techdocs.read"
+        resources:
+          catalog-entity:
+            allow: ["*"]
+            deny: ["system-*"]
+          scaffolder-template:
+            allow: ["*"]
+
+      - name: team-lead
+        displayName: Team Lead
+        description: Team leadership with extended permissions
+        permissions:
+          - "catalog.entity.read"
+          - "catalog.entity.create"
+          - "catalog.entity.refresh"
+          - "scaffolder.template.parameter.read"
+          - "scaffolder.action.execute"
+          - "scaffolder.task.read"
+          - "scaffolder.task.create"
+          - "techdocs.read"
+        resources:
+          catalog-entity:
+            allow: ["*"]
+          user:
+            allow: ["team-*"]
+
+      - name: read-only
+        displayName: Read Only User
+        description: Read-only access to catalog and documentation
+        permissions:
+          - "catalog.entity.read"
+          - "scaffolder.template.parameter.read"
+          - "techdocs.read"
+
+      - name: guest
+        displayName: Guest User
+        description: Limited guest access
+        permissions:
+          - "catalog.entity.read"
+          - "techdocs.read"
+        resources:
+          catalog-entity:
+            allow: ["public-*"]
+
+    # Map AWS Cognito groups to roles
+    groupRoles:
+      # AWS Cognito Groups
+      Administrators: ["platform-admin"]
+      Developers: ["developer"]
+      TeamLeads: ["team-lead"]
+      ReadOnly: ["read-only"]
+      Guests: ["guest"]
+
+      # Backstage entity refs
+      "group:default/administrators": ["platform-admin"]
+      "group:default/developers": ["developer"]
+      "group:default/team-leads": ["team-lead"]
+      "group:default/readonly": ["read-only"]
+
+    # Map specific users to roles
+    userRoles:
+      # Example user mappings
+      # 'user:default/admin': ['super-admin']
+      # 'user:default/john.doe': ['developer', 'team-lead']
+
+    # Super admin users (full access)
+    superAdmins:
+      # Add super admin user references
+      # - 'user:default/admin'
+      # - 'admin@company.com'
+
+# Phase 1: Centralized Logging Configuration
+logging:
+  level: info
+  enableCloudWatch: true
+  enableFileLogging: true
+
+  # AWS CloudWatch Logs configuration
+  cloudWatch:
+    region: ${AWS_REGION}
+    logGroupName: /backstage/application
+    logStreamPrefix: backstage-app
+    accessKeyId: ${AWS_ACCESS_KEY_ID}
+    secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+
+  # File logging configuration
+  fileLogging:
+    directory: ./logs
+    maxSize: 20m
+    maxFiles: 14d
+    datePattern: YYYY-MM-DD
+
+# Phase 1: Argo Workflows Integration
+argoWorkflows:
+  # Argo Workflows server configuration
+  baseUrl: ${ARGO_WORKFLOWS_BASE_URL} # e.g., https://argo-workflows.example.com
+  token: ${ARGO_WORKFLOWS_TOKEN}
+  namespace: ${ARGO_WORKFLOWS_NAMESPACE} # e.g., argo-workflows
+  insecure: false
+
+  # Alternative: Use Kubernetes config directly
+  # kubeConfig: ${KUBE_CONFIG_PATH}
+
+# Catalog configuration
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+  locations:
+    # Add your catalog locations here
+    - type: file
+      target: ../../examples/entities.yaml
+
+    # Example GitHub discovery
+    # - type: github-discovery
+    #   target: https://github.com/your-org/*/blob/-/catalog-info.yaml
+
+# Integration configurations
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+
+# Scaffolder configuration
+scaffolder:
+  # See https://backstage.io/docs/features/software-templates/configuration for software template options
+
+# TechDocs configuration
+techdocs:
+  builder: "local" # Alternatives - 'external'
+  generator:
+    runIn: "docker" # Alternatives - 'local'
+  publisher:
+    type: "local" # Alternatives - 'googleGcs' or 'awsS3'
+
+# Kubernetes configuration
+kubernetes:
+  serviceLocatorMethod:
+    type: "multiTenant"
+  clusterLocatorMethods:
+    - type: "config"
+      clusters:
+        - url: ${KUBERNETES_CLUSTER_URL}
+          name: ${KUBERNETES_CLUSTER_NAME}
+          authProvider: "serviceAccount"
+          serviceAccountToken: ${KUBERNETES_SERVICE_ACCOUNT_TOKEN}
+
+# Proxy configuration for external services
+proxy:
+  "/argocd/api":
+    target: ${ARGOCD_BASE_URL}/api/v1
+    changeOrigin: true
+    headers:
+      Authorization: Bearer ${ARGOCD_TOKEN}
+
+# Search configuration
+search:
+  pg:
+    highlightOptions:
+      useHighlight: true
+      maxWord: 35
+      minWord: 3
+      shortWord: 3
