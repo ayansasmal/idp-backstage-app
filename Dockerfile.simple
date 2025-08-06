@@ -1,0 +1,31 @@
+# Simple Dockerfile for basic Backstage build
+FROM node:20-slim
+
+# Install basic dependencies for building
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
+
+# Install all dependencies
+RUN yarn install
+
+# Copy the rest of the app
+COPY . .
+
+# Try to build the backend only (skip frontend for now)
+RUN yarn workspace backend build
+
+# Expose port 7007 for backend
+EXPOSE 7007
+
+# Start the backend
+CMD ["yarn", "workspace", "backend", "start"]
