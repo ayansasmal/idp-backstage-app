@@ -18,7 +18,7 @@ backend:
     # Uncomment the following host directive to bind to specific interfaces
     # host: 127.0.0.1
   csp:
-    connect-src: ["'self'", 'http:', 'https:']
+    connect-src: ["'self'", "http:", "https:"]
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
   cors:
@@ -29,7 +29,7 @@ backend:
   # The production database configuration is stored in app-config.production.yaml
   database:
     client: better-sqlite3
-    connection: ':memory:'
+    connection: ":memory:"
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
 integrations:
@@ -56,17 +56,32 @@ proxy:
 # and an external cloud storage when deploying TechDocs for production use-case.
 # https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
 techdocs:
-  builder: 'local' # Alternatives - 'external'
+  builder: "local" # Alternatives - 'external'
   generator:
-    runIn: 'docker' # Alternatives - 'local'
+    runIn: "docker" # Alternatives - 'local'
   publisher:
-    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+    type: "local" # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
 
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
     guest: {}
+
+    # GitHub OAuth provider
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+
+    # AWS Cognito authentication provider
+    awsCognito:
+      development:
+        clientId: ${AWS_COGNITO_CLIENT_ID}
+        clientSecret: ${AWS_COGNITO_CLIENT_SECRET}
+        userPoolId: ${AWS_COGNITO_USER_POOL_ID}
+        region: ${AWS_COGNITO_REGION}
+        domain: ${AWS_COGNITO_DOMAIN} # Optional, if you have a custom domain set up
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -85,6 +100,28 @@ catalog:
     # Local example template
     - type: file
       target: ../../examples/template/template.yaml
+      rules:
+        - allow: [Template]
+
+    # Custom IDP templates
+    - type: file
+      target: ../../examples/templates/backstage-build-template.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ../../examples/templates/image-build-template.yaml
+      rules:
+        - allow: [Template]
+
+    # Custom scaffolder templates with content
+    - type: file
+      target: ../../examples/templates/nestjs-backend/template.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ../../examples/templates/react-vite-frontend/template.yaml
       rules:
         - allow: [Template]
 
@@ -110,4 +147,19 @@ kubernetes:
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
   # setting this to `false` will disable permissions
-  enabled: true
+  enabled: false
+
+# Unleash OSS integration for feature flags
+unleash:
+  baseUrl: ${UNLEASH_BASE_URL}
+  adminApiKey: ${UNLEASH_ADMIN_API_KEY}
+  clientApiKey: ${UNLEASH_CLIENT_API_KEY}
+  defaultProject: ${UNLEASH_DEFAULT_PROJECT}
+
+# Argo Workflows integration
+argoWorkflows:
+  baseUrl: ${ARGO_WORKFLOWS_BASE_URL}
+  # Optional: if Argo Workflows requires authentication
+  # token: ${ARGO_WORKFLOWS_TOKEN}
+  # namespace: ${ARGO_WORKFLOWS_NAMESPACE}
+  namespace: argo

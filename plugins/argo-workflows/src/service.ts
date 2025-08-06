@@ -1,4 +1,3 @@
-import { Config } from '@backstage/config';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { NotFoundError } from '@backstage/errors';
 import * as k8s from '@kubernetes/client-node';
@@ -105,7 +104,7 @@ export class ArgoWorkflowsService {
             this.k8sApi = kc.makeApiClient(k8s.CustomObjectsApi);
             this.logger.info('Kubernetes client initialized successfully');
         } catch (error) {
-            this.logger.error('Failed to initialize Kubernetes client', { error });
+            this.logger.error('Failed to initialize Kubernetes client', { error: error instanceof Error ? error.message : String(error) });
             throw error;
         }
     }

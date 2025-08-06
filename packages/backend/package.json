@@ -44,6 +44,7 @@
     "@internal/plugin-logging": "link:../../plugins/logging",
     "@internal/plugin-permission-backend-module-rbac": "link:../../plugins/permission-backend-module-rbac",
     "@internal/plugin-argo-workflows": "link:../../plugins/argo-workflows",
+    "@internal/plugin-unleash-feature-flags": "link:../../plugins/unleash-feature-flags",
     "app": "link:../app",
     "better-sqlite3": "^9.0.0",
     "node-gyp": "^10.0.0",

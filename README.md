@@ -259,13 +259,111 @@ scaffolder:
 
 Required environment variables for full functionality:
 
-- `GITHUB_TOKEN`: GitHub Personal Access Token for repository integration
-- `POSTGRES_*`: Database connection parameters (production)
+#### **Core Backend Configuration**
+
 - `BACKEND_SECRET`: Shared secret for backend authentication
-- `AWS_COGNITO_CLIENT_ID`: AWS Cognito App Client ID for OIDC authentication
+- `NODE_ENV`: Environment mode (development, production)
+
+#### **Database Configuration**
+
+- `POSTGRES_HOST`: PostgreSQL database host
+- `POSTGRES_PORT`: PostgreSQL database port (default: 5432)
+- `POSTGRES_USER`: Database username
+- `POSTGRES_PASSWORD`: Database password
+- `POSTGRES_DB`: Database name
+
+#### **AWS Cognito Authentication (Phase 1)**
+
+- `AWS_COGNITO_USER_POOL_ID`: AWS Cognito User Pool ID (e.g., us-east-1_XXXXXXXXX)
+- `AWS_COGNITO_CLIENT_ID`: AWS Cognito App Client ID
 - `AWS_COGNITO_CLIENT_SECRET`: AWS Cognito App Client Secret
-- `AWS_COGNITO_USER_POOL_ID`: AWS Cognito User Pool ID
-- `AWS_REGION`: AWS region where Cognito is deployed
+- `AWS_COGNITO_REGION`: AWS region where Cognito is deployed (e.g., us-east-1)
+- `AWS_COGNITO_DOMAIN`: Cognito domain for hosted UI (e.g., your-domain.auth.us-east-1.amazoncognito.com)
+
+#### **AWS CloudWatch Logging (Phase 1)**
+
+- `AWS_ACCESS_KEY_ID`: AWS access key for CloudWatch Logs
+- `AWS_SECRET_ACCESS_KEY`: AWS secret access key for CloudWatch Logs
+- `AWS_REGION`: AWS region for CloudWatch (e.g., us-east-1)
+
+#### **Argo Workflows Integration (Phase 1)**
+
+- `ARGO_WORKFLOWS_BASE_URL`: Argo Workflows server URL (e.g., https://argo-workflows.example.com)
+- `ARGO_WORKFLOWS_TOKEN`: Argo Workflows authentication token
+- `ARGO_WORKFLOWS_NAMESPACE`: Kubernetes namespace for workflows (e.g., argo-workflows)
+- `KUBE_CONFIG_PATH`: Path to Kubernetes config file (alternative to token auth)
+
+#### **Unleash Feature Flags**
+
+- `UNLEASH_BASE_URL`: Unleash OSS server URL (e.g., http://unleash.example.com:4242)
+- `UNLEASH_ADMIN_API_KEY`: Unleash admin API token for management operations
+- `UNLEASH_CLIENT_API_KEY`: Unleash client API token for flag evaluation (optional)
+- `UNLEASH_DEFAULT_PROJECT`: Default project name for feature flags (optional)
+
+#### **GitHub Integration**
+
+- `GITHUB_TOKEN`: GitHub Personal Access Token for repository integration
+
+#### **Kubernetes Integration**
+
+- `KUBERNETES_CLUSTER_URL`: Kubernetes API server URL
+- `KUBERNETES_CLUSTER_NAME`: Cluster name for display
+- `KUBERNETES_SERVICE_ACCOUNT_TOKEN`: Service account token for cluster access
+
+#### **ArgoCD Integration (Optional)**
+
+- `ARGOCD_BASE_URL`: ArgoCD server URL for GitOps visibility
+- `ARGOCD_TOKEN`: ArgoCD authentication token
+
+#### **Example Environment Setup**
+
+For development, create a `.env` file in the root directory:
+
+```bash
+# Backend Configuration
+BACKEND_SECRET=your-backend-secret-key
+NODE_ENV=development
+
+# Database (Local Development)
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=backstage
+POSTGRES_PASSWORD=backstage
+POSTGRES_DB=backstage_dev
+
+# AWS Cognito Authentication
+AWS_COGNITO_USER_POOL_ID=us-east-1_XXXXXXXXX
+AWS_COGNITO_CLIENT_ID=your-cognito-client-id
+AWS_COGNITO_CLIENT_SECRET=your-cognito-client-secret
+AWS_COGNITO_REGION=us-east-1
+AWS_COGNITO_DOMAIN=your-company.auth.us-east-1.amazoncognito.com
+
+# AWS CloudWatch Logging
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=us-east-1
+
+# Argo Workflows
+ARGO_WORKFLOWS_BASE_URL=https://argo-workflows.your-company.com
+ARGO_WORKFLOWS_TOKEN=your-argo-token
+ARGO_WORKFLOWS_NAMESPACE=argo-workflows
+
+# Unleash Feature Flags
+UNLEASH_BASE_URL=http://unleash.your-company.com:4242
+UNLEASH_ADMIN_API_KEY=your-admin-api-key
+UNLEASH_CLIENT_API_KEY=your-client-api-key
+UNLEASH_DEFAULT_PROJECT=default
+
+# GitHub Integration
+GITHUB_TOKEN=ghp_your-github-personal-access-token
+
+# Kubernetes
+KUBERNETES_CLUSTER_URL=https://kubernetes.your-company.com
+KUBERNETES_CLUSTER_NAME=production-cluster
+KUBERNETES_SERVICE_ACCOUNT_TOKEN=your-k8s-token
+```
+
+For production deployment, these should be managed through your container orchestration platform's secret management system.
 
 ## Development Workflow
 

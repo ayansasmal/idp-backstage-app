@@ -1,0 +1,53 @@
+{
+    "name": "@internal/plugin-unleash-feature-flags-frontend",
+    "version": "0.1.0",
+    "description": "Frontend components for Unleash feature flags management in Backstage",
+    "main": "src/index.ts",
+    "types": "src/index.ts",
+    "license": "Apache-2.0",
+    "private": true,
+    "publishConfig": {
+        "access": "restricted"
+    },
+    "backstage": {
+        "role": "frontend-plugin"
+    },
+    "sideEffects": false,
+    "scripts": {
+        "start": "backstage-cli package start",
+        "build": "backstage-cli package build",
+        "lint": "backstage-cli package lint",
+        "test": "backstage-cli package test",
+        "clean": "backstage-cli package clean",
+        "prepack": "backstage-cli package prepack",
+        "postpack": "backstage-cli package postpack"
+    },
+    "dependencies": {
+        "@backstage/core-components": "^0.17.4",
+        "@backstage/core-plugin-api": "^1.10.9",
+        "@backstage/plugin-catalog-react": "^1.19.1",
+        "@backstage/errors": "^1.2.5",
+        "@material-ui/core": "^4.12.4",
+        "@material-ui/icons": "^4.11.3",
+        "@material-ui/lab": "4.0.0-alpha.61",
+        "react": "^18.0.2",
+        "react-dom": "^18.0.2",
+        "react-router-dom": "^6.28.0",
+        "react-use": "^17.4.0"
+    },
+    "devDependencies": {
+        "@backstage/cli": "^0.33.1",
+        "@backstage/dev-utils": "^1.1.10",
+        "@backstage/test-utils": "^1.7.10",
+        "@testing-library/jest-dom": "^6.0.0",
+        "@testing-library/react": "^14.0.0",
+        "@testing-library/user-event": "^14.0.0",
+        "@types/react": "^18.0.0"
+    },
+    "peerDependencies": {
+        "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+    },
+    "files": [
+        "dist"
+    ]
+}

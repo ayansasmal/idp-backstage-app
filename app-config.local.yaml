@@ -1,1 +1,26 @@
 # Backstage override configuration for your local development environment
+
+# Example configuration for local development
+# In production, these values should be set via environment variables
+
+# GitHub OAuth configuration (for testing - replace with real values)
+AUTH_GITHUB_CLIENT_ID: "dummy-github-client-id"
+AUTH_GITHUB_CLIENT_SECRET: "dummy-github-client-secret"
+
+# AWS Cognito configuration (environment variables for substitution)
+AWS_COGNITO_CLIENT_ID: "dummy-cognito-client-id"
+AWS_COGNITO_CLIENT_SECRET: "dummy-cognito-client-secret"
+AWS_COGNITO_USER_POOL_ID: "dummy-user-pool-id"
+AWS_COGNITO_REGION: "us-east-1"
+
+# Unleash configuration (update with your actual Unleash instance)
+unleash:
+  baseUrl: http://localhost:4242 # Default Unleash OSS port
+  adminApiKey: "*:*.unleash-insecure-admin-api-token" # Replace with actual admin API key
+  clientApiKey: "*:development.unleash-insecure-client-api-token" # Replace with actual client API key
+  defaultProject: default
+
+# Argo Workflows configuration (update with your actual Argo instance)
+argoWorkflows:
+  baseUrl: http://localhost:2746 # Default Argo Workflows UI port
+  namespace: argo

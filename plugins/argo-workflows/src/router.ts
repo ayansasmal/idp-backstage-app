@@ -19,7 +19,7 @@ export async function createRouter(options: RouterOptions): Promise<Router> {
     /**
      * Health check endpoint
      */
-    router.get('/health', (req, res) => {
+    router.get('/health', (_req, res) => {
         res.json({
             status: 'ok',
             timestamp: new Date().toISOString(),
@@ -139,7 +139,7 @@ export async function createRouter(options: RouterOptions): Promise<Router> {
     /**
      * Get workflow templates
      */
-    router.get('/templates', async (req, res) => {
+    router.get('/templates', async (_req, res) => {
         try {
             const templates = await argoService.getWorkflowTemplates();
             res.json(templates);
@@ -155,7 +155,7 @@ export async function createRouter(options: RouterOptions): Promise<Router> {
     /**
      * Get workflow statistics
      */
-    router.get('/statistics', async (req, res) => {
+    router.get('/statistics', async (_req, res) => {
         try {
             const stats = await argoService.getWorkflowStatistics();
             res.json(stats);
@@ -169,7 +169,7 @@ export async function createRouter(options: RouterOptions): Promise<Router> {
     });
 
     // Error handling middleware
-    router.use((error: Error, req: any, res: any, next: any) => {
+    router.use((error: Error, _req: any, res: any, _next: any) => {
         logger.error('Argo Workflows router error', error);
         res.status(500).json({
             error: 'Internal server error',

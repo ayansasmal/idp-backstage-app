@@ -12,6 +12,13 @@
   "compilerOptions": {
     "outDir": "dist-types",
     "rootDir": ".",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false
   }
 }

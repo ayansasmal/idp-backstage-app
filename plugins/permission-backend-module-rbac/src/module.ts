@@ -2,6 +2,7 @@ import {
     createBackendModule,
     coreServices,
 } from '@backstage/backend-plugin-api';
+import { policyExtensionPoint } from '@backstage/plugin-permission-node/alpha';
 import { RBACPermissionPolicy, defaultRBACConfig, RBACConfig } from './policy';
 
 /**
@@ -22,8 +23,9 @@ export const permissionModuleRBAC = createBackendModule({
             deps: {
                 config: coreServices.rootConfig,
                 logger: coreServices.logger,
+                policy: policyExtensionPoint,
             },
-            async init({ config, logger }) {
+            async init({ config, logger, policy }) {
                 // Load RBAC configuration
                 const rbacConfig = loadRBACConfig(config);
 
@@ -34,7 +36,8 @@ export const permissionModuleRBAC = createBackendModule({
                     superAdminsCount: rbacConfig.superAdmins.length,
                 });
 
-                // The policy will be created when needed via createRBACPermissionPolicy
+                // Register the RBAC permission policy
+                policy.setPolicy(new RBACPermissionPolicy(rbacConfig));
             },
         });
     },

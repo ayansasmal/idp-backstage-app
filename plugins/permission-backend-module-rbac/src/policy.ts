@@ -58,7 +58,7 @@ export class RBACPermissionPolicy implements PermissionPolicy {
         const permission = request.permission;
 
         // Handle resource permissions
-        if (permission.resourceType) {
+        if ('resourceType' in permission && permission.resourceType) {
             return this.handleResourcePermission(request, userRoles);
         }
 
@@ -132,7 +132,7 @@ export class RBACPermissionPolicy implements PermissionPolicy {
         }
 
         // Extract resource type and identifier
-        const resourceType = permission.resourceType || 'unknown';
+        const resourceType = ('resourceType' in permission && permission.resourceType) || 'unknown';
         const resourceName = resourceRef.split('/').pop() || resourceRef;
 
         for (const roleName of userRoles) {
