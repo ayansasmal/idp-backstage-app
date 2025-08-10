@@ -93,6 +93,12 @@ catalog:
 
   # Local entity locations
   locations:
+    # Organization API endpoint
+    - type: organization-api
+      target: http://localhost:3001/api/organizations
+      rules:
+        - allow: [User, Group]
+
     # Local example data
     - type: file
       target: ../../examples/entities.yaml
@@ -103,11 +109,11 @@ catalog:
       rules:
         - allow: [Template]
 
-    # Local organizational data
-    - type: file
-      target: ../../examples/org.yaml
-      rules:
-        - allow: [User, Group]
+  # Local organizational data (fallback)
+  # - type: file
+  #   target: ../../examples/org.yaml
+  #   rules:
+  #     - allow: [User, Group]
 
 # Software Templates (Local)
 scaffolder:

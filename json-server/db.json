@@ -1,0 +1,307 @@
+{
+    "organizations": [
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "User",
+            "metadata": {
+                "name": "guest"
+            },
+            "spec": {
+                "memberOf": [
+                    "guests"
+                ]
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "User",
+            "metadata": {
+                "name": "john.doe",
+                "annotations": {
+                    "github.com/user-login": "johndoe"
+                }
+            },
+            "spec": {
+                "profile": {
+                    "displayName": "John Doe",
+                    "email": "john.doe@company.com"
+                },
+                "memberOf": [
+                    "developers",
+                    "architects"
+                ]
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "User",
+            "metadata": {
+                "name": "jane.smith",
+                "annotations": {
+                    "github.com/user-login": "janesmith"
+                }
+            },
+            "spec": {
+                "profile": {
+                    "displayName": "Jane Smith",
+                    "email": "jane.smith@company.com"
+                },
+                "memberOf": [
+                    "qa",
+                    "leads"
+                ]
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "guests"
+            },
+            "spec": {
+                "type": "team",
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "developers"
+            },
+            "spec": {
+                "type": "team",
+                "children": [],
+                "parent": "engineering"
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "architects"
+            },
+            "spec": {
+                "type": "team",
+                "children": [],
+                "parent": "engineering"
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "qa"
+            },
+            "spec": {
+                "type": "team",
+                "children": [],
+                "parent": "engineering"
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "leads"
+            },
+            "spec": {
+                "type": "team",
+                "children": [
+                    "developers",
+                    "qa"
+                ]
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "engineering"
+            },
+            "spec": {
+                "type": "business-unit",
+                "children": [
+                    "developers",
+                    "architects",
+                    "qa",
+                    "leads"
+                ]
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "User",
+            "metadata": {
+                "name": "new.user",
+                "annotations": {
+                    "github.com/user-login": "newuser"
+                }
+            },
+            "spec": {
+                "profile": {
+                    "displayName": "New User",
+                    "email": "new.user@company.com"
+                },
+                "memberOf": [
+                    "developers"
+                ]
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-platform-admin",
+                "description": "Full platform administration access"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Platform Administrators"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-platform-operator",
+                "description": "Platform operations and monitoring"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Platform Operators"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-security-admin",
+                "description": "Security policies and compliance"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Security Administrators"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-senior-developer",
+                "description": "Full development access with mentoring capabilities"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Senior Developers"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-developer",
+                "description": "Standard development access"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Developers"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-junior-developer",
+                "description": "Limited development access for junior developers"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Junior Developers"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-product-manager",
+                "description": "Product oversight and metrics access"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Product Managers"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-business-stakeholder",
+                "description": "Read-only access to business reports and metrics"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Business Stakeholders"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "Group",
+            "metadata": {
+                "name": "idp-service-account",
+                "description": "Automated systems and CI/CD access"
+            },
+            "spec": {
+                "type": "team",
+                "profile": {
+                    "displayName": "IDP Service Accounts"
+                },
+                "children": []
+            }
+        },
+        {
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "User",
+            "metadata": {
+                "name": "ayansasmal",
+                "annotations": {
+                    "github.com/user-login": "ayansasmal"
+                }
+            },
+            "spec": {
+                "profile": {
+                    "displayName": "Ayan Sasmal",
+                    "email": "ayandelhi@gmail.com"
+                },
+                "memberOf": [
+                    "idp-platform-admin",
+                    "idp-security-admin"
+                ]
+            }
+        }
+    ]
+}

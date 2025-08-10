@@ -34,6 +34,9 @@ backend.add(
 // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
+// Organization API module
+backend.add(import('./plugins/catalog/organizationApiModule'));
+
 // permission plugin
 backend.add(import('@backstage/plugin-permission-backend'));
 

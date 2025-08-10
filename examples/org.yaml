@@ -8,17 +8,17 @@ spec:
   memberOf: [guests]
 ---
 # GitHub user - ayansasmal
-apiVersion: backstage.io/v1alpha1
-kind: User
-metadata:
-  name: ayansasmal
-  annotations:
-    github.com/user-login: ayansasmal
-spec:
-  profile:
-    displayName: Ayan Sasmal
-    email: ayandelhi@gmail.com # Replace with your actual email if needed
-  memberOf: [developers]
+# apiVersion: backstage.io/v1alpha1
+# kind: User
+# metadata:
+#   name: ayansasmal
+#   annotations:
+#     github.com/user-login: ayansasmal
+# spec:
+#   profile:
+#     displayName: Ayan Sasmal
+#     email: ayandelhi@gmail.com # Replace with your actual email if needed
+#   memberOf: [developers]
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
 apiVersion: backstage.io/v1alpha1

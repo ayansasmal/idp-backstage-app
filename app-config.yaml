@@ -123,6 +123,12 @@ catalog:
 
   # Static Entity Locations
   locations:
+    # Organization API endpoint
+    - type: organization-api
+      target: http://localhost:3001/api/organizations
+      rules:
+        - allow: [User, Group]
+
     # Platform entities and templates
     - type: url
       target: https://github.com/${GITHUB_ORG}/backstage-templates/blob/main/catalog-info.yaml
@@ -130,10 +136,10 @@ catalog:
         - allow: [Template]
 
     # Local organization structure (fallback)
-    - type: file
-      target: ../../examples/org.yaml
-      rules:
-        - allow: [User, Group]
+    # - type: file
+    #   target: ../../examples/org.yaml
+    #   rules:
+    #     - allow: [User, Group]
 
     # Remote organization structure (if GitHub org configured)
     - type: url

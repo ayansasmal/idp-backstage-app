@@ -77,7 +77,7 @@ const app = createApp({
 
 
 
-import { FeatureFlagsPage } from './components/featureFlags/FeatureFlagsPage';
+import { FeatureFlagsPage } from '@internal/plugin-feature-flags';
 
 const routes = (
   <FlatRoutes>
