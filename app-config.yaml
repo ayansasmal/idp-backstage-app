@@ -1,113 +1,318 @@
+# Production IDP Platform Configuration
+# This configuration is designed to work with the full IDP platform deployment
+# All services and integrations point to the IDP platform URLs
+
 app:
-  title: Scaffolded Backstage App
-  baseUrl: http://localhost:3000
+  title: IDP Backstage Portal
+  baseUrl: ${APP_BASE_URL:-https://backstage.idp-platform.local}
 
 organization:
-  name: My Company
+  name: ${ORGANIZATION_NAME:-IDP Platform Team}
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
-  # See https://backstage.io/docs/auth/service-to-service-auth for
-  # information on the format
-  # auth:
-  #   keys:
-  #     - secret: ${BACKEND_SECRET}
-  baseUrl: http://localhost:7007
+  # See https://backstage.io/docs/auth/service-to-service-auth for information on the format
+  auth:
+    keys:
+      - secret: ${BACKEND_SECRET:-backstage-secret}
+  baseUrl: ${BACKEND_BASE_URL:-https://backstage.idp-platform.local}
   listen:
-    port: 7007
-    # Uncomment the following host directive to bind to specific interfaces
-    # host: 127.0.0.1
-  csp:
-    connect-src: ["'self'", 'http:', 'https:']
-    # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
-    # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+    port: ${PORT:-7007}
+    host: ${HOST:-0.0.0.0}
+
+  # Production database (PostgreSQL)
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST:-postgres.idp-platform.local}
+      port: ${POSTGRES_PORT:-5432}
+      user: ${POSTGRES_USER:-backstage}
+      password: ${POSTGRES_PASSWORD}
+      database: ${POSTGRES_DB:-backstage}
+      ssl:
+        require: ${POSTGRES_SSL_REQUIRE:-true}
+        rejectUnauthorized: ${POSTGRES_SSL_REJECT_UNAUTHORIZED:-false}
+
+  # Production CORS and CSP
   cors:
-    origin: http://localhost:3000
+    origin: ${CORS_ORIGIN:-https://backstage.idp-platform.local}
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
     credentials: true
-  # This is for local development only, it is not recommended to use this in production
-  # The production database configuration is stored in app-config.production.yaml
-  database:
-    client: better-sqlite3
-    connection: ':memory:'
-  # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
+  csp:
+    connect-src:
+      - "'self'"
+      - "https:"
+      - "wss:"
+      - "https://github.com"
+      - "https://api.github.com"
+      - ${ARGOCD_SERVER_URL:-https://argocd.idp-platform.local}
+      - ${GRAFANA_URL:-https://grafana.idp-platform.local}
+      - ${PROMETHEUS_URL:-https://prometheus.idp-platform.local}
+    frame-src:
+      - "'self'"
+      - "https://github.com"
+    img-src:
+      - "'self'"
+      - "data:"
+      - "https:"
+      - "https://avatars.githubusercontent.com"
+
+# GitHub Integration
 integrations:
   github:
     - host: github.com
-      # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
-      # about setting up the GitHub integration here: https://backstage.io/docs/integrations/github/locations#configuration
       token: ${GITHUB_TOKEN}
-    ### Example for how to add your GitHub Enterprise instance using the API:
-    # - host: ghe.example.net
-    #   apiBaseUrl: https://ghe.example.net/api/v3
-    #   token: ${GHE_TOKEN}
+      apps:
+        - appId: ${GITHUB_APP_ID}
+          clientId: ${GITHUB_CLIENT_ID}
+          clientSecret: ${GITHUB_CLIENT_SECRET}
+          webhookSecret: ${GITHUB_WEBHOOK_SECRET}
+          privateKey: ${GITHUB_PRIVATE_KEY}
 
-proxy:
-  ### Example for how to add a proxy endpoint for the frontend.
-  ### A typical reason to do this is to handle HTTPS and CORS for internal services.
-  # endpoints:
-  #   '/test':
-  #     target: 'https://example.com'
-  #     changeOrigin: true
-
-# Reference documentation http://backstage.io/docs/features/techdocs/configuration
-# Note: After experimenting with basic setup, use CI/CD to generate docs
-# and an external cloud storage when deploying TechDocs for production use-case.
-# https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
-techdocs:
-  builder: 'local' # Alternatives - 'external'
-  generator:
-    runIn: 'docker' # Alternatives - 'local'
-  publisher:
-    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
-
+# Authentication Configuration
 auth:
-  # see https://backstage.io/docs/auth/ to learn about auth providers
+  environment: production
   providers:
-    # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    # Guest authentication (allows unrestricted access for now)
+    guest:
+      userEntityRef: "user:default/guest"
 
-scaffolder:
-  # see https://backstage.io/docs/features/software-templates/configuration for software template options
+    # GitHub OAuth (optional authentication)
+    github:
+      production:
+        clientId: ${GITHUB_CLIENT_ID:-Ov23lig5ZN6AwksrqMJr}
+        clientSecret: ${GITHUB_CLIENT_SECRET:-57bbed8b53cfbf7db08c0c26a5df45dc9182b44a}
+        signIn:
+          resolvers:
+            # Maps users based on GitHub username to user:default/username format
+            - resolver: usernameMatchingUserEntityName
+              params:
+                dangerouslyAllowSignInWithoutUserInCatalog: true
+            # - resolver: emailMatchingUserEntityProfileEmail
+            #   params:
+            #     dangerouslyAllowSignInWithoutUserInCatalog: true
 
+# Simplified Permission Configuration - Allow all for guest access
+permission:
+  enabled: false # Disabled to allow full access for all users including guests
+
+# Service Catalog Configuration
 catalog:
   import:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
-  locations:
-    # Local example data, file locations are relative to the backend process, typically `packages/backend`
-    - type: file
-      target: ../../examples/entities.yaml
+    - allow: [Component, System, API, Resource, Location, User, Group, Template]
 
-    # Local example template
-    - type: file
-      target: ../../examples/template/template.yaml
+  # Catalog Providers
+  providers:
+    # GitHub Discovery
+    github:
+      production:
+        organization: ${GITHUB_ORG}
+        catalogPath: "/catalog-info.yaml"
+        filters:
+          branch: ${GITHUB_DEFAULT_BRANCH:-main}
+          repository: ".*"
+        schedule:
+          frequency:
+            minutes: ${GITHUB_SYNC_FREQUENCY:-10}
+          timeout:
+            minutes: 3
+
+  # Static Entity Locations
+  locations:
+    # Platform entities and templates
+    - type: url
+      target: https://github.com/${GITHUB_ORG}/backstage-templates/blob/main/catalog-info.yaml
       rules:
         - allow: [Template]
 
-    # Local example organizational data
+    # Local organization structure (fallback)
     - type: file
       target: ../../examples/org.yaml
       rules:
         - allow: [User, Group]
 
-    ## Uncomment these lines to add more example data
-    # - type: url
-    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+    # Remote organization structure (if GitHub org configured)
+    - type: url
+      target: https://github.com/${GITHUB_ORG}/backstage-catalog/blob/main/org.yaml
+      rules:
+        - allow: [User, Group]
+      optional: true
 
-    ## Uncomment these lines to add an example org
-    # - type: url
-    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
-    #   rules:
-    #     - allow: [User, Group]
+# Software Templates
+scaffolder:
+  # Template repository configuration
+  defaultAuthor:
+    name: ${SCAFFOLDER_DEFAULT_AUTHOR_NAME:-IDP Platform}
+    email: ${SCAFFOLDER_DEFAULT_AUTHOR_EMAIL:-platform@company.com}
+  defaultCommitMessage: "Initial commit from Backstage scaffolder"
 
+# TechDocs Configuration
+techdocs:
+  builder: "external" # Use external builder for production
+  generator:
+    runIn: "docker"
+  publisher:
+    type: "awsS3"
+    awsS3:
+      bucketName: ${TECHDOCS_S3_BUCKET:-idp-backstage-techdocs}
+      region: ${AWS_REGION:-us-east-1}
+      credentials:
+        accessKeyId: ${AWS_ACCESS_KEY_ID}
+        secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+
+# Kubernetes Configuration
 kubernetes:
-  # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
+  serviceLocatorMethod:
+    type: "multiTenant"
+  clusterLocatorMethods:
+    - type: "config"
+      clusters:
+        - url: ${KUBERNETES_CLUSTER_URL:-https://kubernetes.idp-platform.local}
+          name: ${KUBERNETES_CLUSTER_NAME:-idp-cluster}
+          authProvider: "serviceAccount"
+          skipTLSVerify: ${KUBERNETES_SKIP_TLS_VERIFY:-false}
+          serviceAccountToken: ${KUBERNETES_SERVICE_ACCOUNT_TOKEN}
+          caFile: ${KUBERNETES_CA_FILE}
 
-# see https://backstage.io/docs/permissions/getting-started for more on the permission framework
-permission:
-  # setting this to `false` will disable permissions
-  enabled: true
+# ArgoCD Integration
+argocd:
+  username: ${ARGOCD_USERNAME:-admin}
+  password: ${ARGOCD_PASSWORD}
+  appLocatorMethods:
+    - type: "config"
+      instances:
+        - name: argocd-production
+          url: ${ARGOCD_SERVER_URL:-https://argocd.idp-platform.local}
+          username: ${ARGOCD_USERNAME:-admin}
+          password: ${ARGOCD_PASSWORD}
+          token: ${ARGOCD_AUTH_TOKEN}
+        - name: argocd-staging
+          url: ${ARGOCD_STAGING_SERVER_URL:-https://argocd-staging.idp-platform.local}
+          username: ${ARGOCD_USERNAME:-admin}
+          password: ${ARGOCD_PASSWORD}
+          token: ${ARGOCD_STAGING_AUTH_TOKEN}
+
+# Argo Workflows Integration
+argoWorkflows:
+  instances:
+    - name: argo-workflows-production
+      url: ${ARGO_WORKFLOWS_SERVER_URL:-https://argo-workflows.idp-platform.local}
+      authProvider: "bearer"
+      token: ${ARGO_WORKFLOWS_AUTH_TOKEN}
+      namespace: ${ARGO_WORKFLOWS_NAMESPACE:-argo}
+    - name: argo-workflows-staging
+      url: ${ARGO_WORKFLOWS_STAGING_SERVER_URL:-https://argo-workflows-staging.idp-platform.local}
+      authProvider: "bearer"
+      token: ${ARGO_WORKFLOWS_STAGING_AUTH_TOKEN}
+      namespace: ${ARGO_WORKFLOWS_STAGING_NAMESPACE:-argo-staging}
+
+# Grafana Integration
+grafana:
+  domain: ${GRAFANA_DOMAIN:-grafana.idp-platform.local}
+  unifiedAlerting: true
+  proxyPath: /grafana/api
+
+# Prometheus Integration
+prometheus:
+  proxyPath: /prometheus/api/v1
+
+# Unleash Feature Flags
+unleash:
+  url: ${UNLEASH_URL:-https://unleash.idp-platform.local}
+  apiToken: ${UNLEASH_API_TOKEN}
+  clientKey: ${UNLEASH_CLIENT_KEY}
+  environment: ${UNLEASH_ENVIRONMENT:-production}
+
+# Search Configuration
+search:
+  pg:
+    highlightOptions:
+      useHighlight: true
+      maxWord: 35
+      minWord: 3
+      shortWord: 3
+      highlightAll: true
+
+# Proxy Configuration for Internal Services
+proxy:
+  endpoints:
+    "/grafana/api":
+      target: ${GRAFANA_URL:-https://grafana.idp-platform.local}
+      credentials: require
+      headers:
+        Authorization: Bearer ${GRAFANA_API_KEY}
+
+    "/prometheus/api":
+      target: ${PROMETHEUS_URL:-https://prometheus.idp-platform.local}
+      headers:
+        Authorization: Bearer ${PROMETHEUS_API_KEY}
+
+    "/jaeger/api":
+      target: ${JAEGER_URL:-https://jaeger.idp-platform.local}
+      changeOrigin: true
+      credentials: require
+
+    "/kiali/api":
+      target: ${KIALI_URL:-https://kiali.idp-platform.local}
+      changeOrigin: true
+      credentials: require
+      headers:
+        Authorization: Bearer ${KIALI_SERVICE_ACCOUNT_TOKEN}
+
+# Lighthouse CI
+lighthouse:
+  baseUrl: ${LIGHTHOUSE_URL:-https://lighthouse.idp-platform.local}
+
+# SonarQube Integration
+sonarqube:
+  baseUrl: ${SONARQUBE_URL:-https://sonarqube.idp-platform.local}
+  apiKey: ${SONARQUBE_API_KEY}
+
+# Security Scanning
+snyk:
+  apiBaseUrl: https://snyk.io/api/v1
+  apiToken: ${SNYK_TOKEN}
+  orgId: ${SNYK_ORG_ID}
+
+# Cost Insights
+costInsights:
+  engineerCost: ${ENGINEER_COST_PER_HOUR:-200}
+  products:
+    computeEngine:
+      name: "Compute Engine"
+      icon: "compute"
+    cloudDataflow:
+      name: "Cloud Dataflow"
+      icon: "data"
+    bigQuery:
+      name: "BigQuery"
+      icon: "storage"
+    events:
+      name: "Eventing"
+      icon: "data"
+
+# Notifications
+notifications:
+  processors:
+    email:
+      transportConfig:
+        transport: smtp
+        hostname: ${SMTP_HOST:-smtp.company.com}
+        port: ${SMTP_PORT:-587}
+        secure: ${SMTP_SECURE:-false}
+        username: ${SMTP_USERNAME}
+        password: ${SMTP_PASSWORD}
+
+# Entity Feedback
+entityFeedback:
+  integrations:
+    jira:
+      host: ${JIRA_HOST:-jira.company.com}
+      token: ${JIRA_TOKEN}
+    github:
+      host: github.com
+      token: ${GITHUB_TOKEN}

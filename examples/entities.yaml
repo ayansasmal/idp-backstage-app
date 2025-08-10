@@ -12,12 +12,37 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: example-website
+  annotations:
+    # ArgoCD application integration
+    argocd/app-name: example-website
+    argocd/instance-name: argocd-prod
+    # Kubernetes integration
+    backstage.io/kubernetes-id: example-website
 spec:
   type: website
   lifecycle: experimental
   owner: guests
   system: examples
   providesApis: [example-grpc-api]
+---
+# Example service with ArgoCD integration
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: idp-backstage-app
+  annotations:
+    # ArgoCD application integration
+    argocd/app-name: backstage
+    argocd/instance-name: argocd-prod
+    # Kubernetes integration
+    backstage.io/kubernetes-id: backstage
+    # Source location
+    backstage.io/source-location: url:https://github.com/ayansasmal/idp-backstage-app
+spec:
+  type: service
+  lifecycle: production
+  owner: platform-team
+  system: examples
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-api
 apiVersion: backstage.io/v1alpha1

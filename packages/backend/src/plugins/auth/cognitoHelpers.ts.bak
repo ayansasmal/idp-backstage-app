@@ -1,0 +1,105 @@
+import {
+  CognitoIdentityProviderClient,
+  AdminGetUserCommand,
+  AdminListGroupsForUserCommand,
+  ListUsersInGroupCommand,
+  AdminAddUserToGroupCommand,
+  AdminRemoveUserFromGroupCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
+
+export class CognitoUserManager {
+  private client: CognitoIdentityProviderClient;
+  private userPoolId: string;
+
+  constructor() {
+    this.client = new CognitoIdentityProviderClient({
+      region: process.env.AWS_REGION || 'us-east-1',
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+    });
+    this.userPoolId = process.env.AWS_COGNITO_USER_POOL_ID!;
+  }
+
+  async getUserGroups(username: string): Promise<string[]> {
+    try {
+      const command = new AdminListGroupsForUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: username,
+      });
+
+      const response = await this.client.send(command);
+      return response.Groups?.map(group => group.GroupName!) || [];
+    } catch (error) {
+      console.error('Error getting user groups:', error);
+      return [];
+    }
+  }
+
+  async addUserToGroup(username: string, groupName: string): Promise<void> {
+    const command = new AdminAddUserToGroupCommand({
+      UserPoolId: this.userPoolId,
+      Username: username,
+      GroupName: groupName,
+    });
+
+    await this.client.send(command);
+  }
+
+  async removeUserFromGroup(
+    username: string,
+    groupName: string,
+  ): Promise<void> {
+    const command = new AdminRemoveUserFromGroupCommand({
+      UserPoolId: this.userPoolId,
+      Username: username,
+      GroupName: groupName,
+    });
+
+    await this.client.send(command);
+  }
+
+  async getUsersInGroup(groupName: string): Promise<string[]> {
+    const command = new ListUsersInGroupCommand({
+      UserPoolId: this.userPoolId,
+      GroupName: groupName,
+    });
+
+    const response = await this.client.send(command);
+    return response.Users?.map(user => user.Username!) || [];
+  }
+
+  async getUserProfile(username: string): Promise<any> {
+    try {
+      const command = new AdminGetUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: username,
+      });
+
+      const response = await this.client.send(command);
+      
+      // Parse user attributes
+      const attributes: Record<string, string> = {};
+      response.UserAttributes?.forEach(attr => {
+        if (attr.Name && attr.Value) {
+          attributes[attr.Name] = attr.Value;
+        }
+      });
+
+      return {
+        username: response.Username,
+        userStatus: response.UserStatus,
+        enabled: response.Enabled,
+        userCreateDate: response.UserCreateDate,
+        userLastModifiedDate: response.UserLastModifiedDate,
+        attributes,
+      };
+    } catch (error) {
+      console.error('Error getting user profile:', error);
+      throw error;
+    }
+  }
+}
+
+export const cognitoUserManager = new CognitoUserManager();

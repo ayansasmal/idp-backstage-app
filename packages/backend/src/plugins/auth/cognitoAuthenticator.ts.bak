@@ -1,0 +1,80 @@
+import { oidcAuthenticator } from '@backstage/plugin-auth-backend-module-oidc-provider';
+import {
+  CognitoIdentityProviderClient,
+  AdminListGroupsForUserCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
+
+// Initialize Cognito client
+const cognitoClient = new CognitoIdentityProviderClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+export const cognitoAuthenticator = oidcAuthenticator.withDefaultProfileTransform(
+  async (result, ctx) => {
+    const { profile } = result;
+
+    try {
+      // Get user groups from Cognito
+      const groups = await getCognitoUserGroups(profile.email!);
+
+      // Map Cognito groups to Backstage roles
+      const roles = mapCognitoGroupsToBackstageRoles(groups);
+
+      return {
+        profile: {
+          email: profile.email!,
+          displayName: profile.name || profile.email!,
+          picture: profile.picture,
+        },
+        backstageIdentity: {
+          type: 'user',
+          userEntityRef: `user:default/${profile.email!.split('@')[0]}`,
+        },
+        providerInfo: {
+          accessToken: result.session.accessToken,
+          refreshToken: result.session.refreshToken,
+          expiresInSeconds: result.session.expiresInSeconds,
+          groups,
+          roles,
+        },
+      };
+    } catch (error) {
+      ctx.logger.error('Failed to process Cognito user', error);
+      throw error;
+    }
+  }
+);
+
+// Helper function to get user groups from Cognito
+async function getCognitoUserGroups(email: string): Promise<string[]> {
+  try {
+    const command = new AdminListGroupsForUserCommand({
+      UserPoolId: process.env.AWS_COGNITO_USER_POOL_ID!,
+      Username: email,
+    });
+
+    const response = await cognitoClient.send(command);
+    return response.Groups?.map(group => group.GroupName!) || [];
+  } catch (error) {
+    console.error('Error getting user groups:', error);
+    return [];
+  }
+}
+
+// Map Cognito groups to Backstage roles
+function mapCognitoGroupsToBackstageRoles(groups: string[]): string[] {
+  const roleMapping: Record<string, string> = {
+    'platform-admins': 'admin',
+    'platform-engineers': 'platform-engineer',
+    'tech-leads': 'tech-lead',
+    'senior-developers': 'senior-developer',
+    developers: 'developer',
+    viewers: 'viewer',
+  };
+
+  return groups.map(group => roleMapping[group]).filter(Boolean);
+}

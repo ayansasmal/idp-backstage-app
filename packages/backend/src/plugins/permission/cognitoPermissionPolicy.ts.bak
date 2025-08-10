@@ -1,0 +1,25 @@
+import {
+  PermissionPolicy,
+  PolicyQuery,
+} from '@backstage/plugin-permission-node';
+import {
+  PolicyDecision,
+  AuthorizeResult,
+} from '@backstage/plugin-permission-common';
+import { BackstageIdentityResponse } from '@backstage/plugin-auth-node';
+
+export class CognitoPermissionPolicy implements PermissionPolicy {
+  async handle(
+    _request: PolicyQuery,
+    user?: BackstageIdentityResponse,
+  ): Promise<PolicyDecision> {
+    // Simplified policy: Allow all authenticated users for now
+    // TODO: Implement proper Cognito group-based RBAC when authentication is configured
+    if (user) {
+      return { result: AuthorizeResult.ALLOW };
+    }
+    
+    // Deny unauthenticated users
+    return { result: AuthorizeResult.DENY };
+  }
+}

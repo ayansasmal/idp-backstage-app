@@ -32,6 +32,7 @@ import {
 } from '@backstage/core-components';
 import { createApp } from '@backstage/app-defaults';
 import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
@@ -56,9 +57,27 @@ const app = createApp({
     });
   },
   components: {
-    SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
+    SignInPage: props => (
+      <SignInPage 
+        {...props} 
+        auto={false} 
+        providers={[
+          'guest', 
+          {
+            id: 'github',
+            title: 'GitHub',
+            message: 'Sign in using GitHub',
+            apiRef: githubAuthApiRef,
+          }
+        ]} 
+      />
+    ),
   },
 });
+
+
+
+import { FeatureFlagsPage } from './components/featureFlags/FeatureFlagsPage';
 
 const routes = (
   <FlatRoutes>
@@ -94,6 +113,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
+    <Route path="/feature-flags" element={<FeatureFlagsPage />} />
   </FlatRoutes>
 );
 

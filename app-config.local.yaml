@@ -1,1 +1,298 @@
-# Backstage override configuration for your local development environment
+# Local Development Configuration with LocalStack and Local IDP
+# This configuration is designed for local development using LocalStack for AWS services
+# and local instances of the IDP platform components
+
+app:
+  title: IDP Backstage Portal (Local)
+  baseUrl: http://localhost:3000
+
+organization:
+  name: IDP Platform Team (Local)
+
+backend:
+  # Used for enabling authentication, secret is shared by all backend plugins
+  auth:
+    keys:
+      - secret: ${BACKEND_SECRET:-backstage-local-secret}
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+    host: 127.0.0.1
+
+  # Local SQLite database for development
+  database:
+    client: better-sqlite3
+    connection: ":memory:"
+    # Uncomment for persistent local database
+    # connection: ./dev.sqlite
+
+  # Local CORS and CSP
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+
+  csp:
+    connect-src:
+      - "'self'"
+      - "http:"
+      - "https:"
+      - "ws:"
+      - "wss:"
+      - "http://localhost:*"
+      - "http://127.0.0.1:*"
+      - "https://github.com"
+      - "https://api.github.com"
+
+# GitHub Integration (Local)
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+
+# LocalStack Configuration
+awsIntegration:
+  localstack:
+    enabled: true
+    endpoint: http://localhost:4566
+    region: us-east-1
+    accessKeyId: test
+    secretAccessKey: test
+
+# Authentication (Local Development)
+auth:
+  environment: development
+  providers:
+    # Guest authentication (primary for local dev)
+    guest:
+      userEntityRef: "user:default/guest"
+
+    # GitHub OAuth (optional authentication)
+    github:
+      development:
+        clientId: ${GITHUB_CLIENT_ID:-Ov23lig5ZN6AwksrqMJr}
+        clientSecret: ${GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            # Auto-create users from GitHub if they don't exist in catalog
+            - resolver: usernameMatchingUserEntityName
+              params:
+                dangerouslyAllowSignInWithoutUserInCatalog: true
+
+# RBAC Configuration (Simplified for local)
+permission:
+  enabled: false # Disable strict RBAC for easier local development
+
+# Service Catalog Configuration (Local)
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location, User, Group, Template]
+
+  # Local entity locations
+  locations:
+    # Local example data
+    - type: file
+      target: ../../examples/entities.yaml
+
+    # Local template
+    - type: file
+      target: ../../examples/template/template.yaml
+      rules:
+        - allow: [Template]
+
+    # Local organizational data
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]
+
+# Software Templates (Local)
+scaffolder:
+  defaultAuthor:
+    name: ${SCAFFOLDER_DEFAULT_AUTHOR_NAME:-Local Developer}
+    email: ${SCAFFOLDER_DEFAULT_AUTHOR_EMAIL:-dev@localhost}
+  defaultCommitMessage: "Initial commit from local Backstage"
+
+# TechDocs Configuration (Local)
+techdocs:
+  builder: "local"
+  generator:
+    runIn: "docker"
+  publisher:
+    type: "local"
+
+# Kubernetes Configuration (Local IDP)
+kubernetes:
+  serviceLocatorMethod:
+    type: "multiTenant"
+  clusterLocatorMethods:
+    - type: "config"
+      clusters:
+        - url: https://kubernetes.docker.internal:6443 # Docker Desktop
+          name: docker-desktop
+          authProvider: "serviceAccount"
+          skipTLSVerify: true
+          serviceAccountToken: ${KUBERNETES_SERVICE_ACCOUNT_TOKEN}
+        - url: http://localhost:8001 # kubectl proxy
+          name: local-cluster
+          authProvider: "serviceAccount"
+          skipTLSVerify: true
+
+# ArgoCD Integration (Local)
+argocd:
+  username: ${ARGOCD_USERNAME:-admin}
+  password: ${ARGOCD_PASSWORD:-admin}
+  appLocatorMethods:
+    - type: "config"
+      instances:
+        - name: argocd-local
+          url: http://localhost:8080
+          username: ${ARGOCD_USERNAME:-admin}
+          password: ${ARGOCD_PASSWORD:-admin}
+
+# Argo Workflows Integration (Local)
+argoWorkflows:
+  instances:
+    - name: argo-workflows-local
+      url: http://localhost:2746
+      authProvider: "bearer"
+      token: ${ARGO_WORKFLOWS_AUTH_TOKEN:-Bearer-token-here}
+      namespace: argo
+
+# Grafana Integration (Local)
+grafana:
+  domain: localhost:3001
+  unifiedAlerting: false # Simpler setup for local
+
+# Prometheus Integration (Local)
+prometheus:
+  proxyPath: /prometheus
+
+# Unleash Feature Flags (Local)
+unleash:
+  url: http://localhost:4242
+  apiToken: ${UNLEASH_API_TOKEN:-*:development.unleash-insecure-api-token}
+  clientKey: ${UNLEASH_CLIENT_KEY:-default:development.unleash-insecure-frontend-api-token}
+  environment: development
+
+# LocalStack AWS Services Configuration
+localstack:
+  services:
+    # Cognito Identity Provider
+    cognitoIdp:
+      endpoint: http://localhost:4566
+      region: us-east-1
+      userPoolId: ${LOCALSTACK_COGNITO_USER_POOL_ID:-us-east-1_test123456}
+      clientId: ${LOCALSTACK_COGNITO_CLIENT_ID:-test-client-id}
+
+    # S3 for TechDocs and artifacts
+    s3:
+      endpoint: http://localhost:4566
+      region: us-east-1
+      bucketName: ${LOCALSTACK_S3_BUCKET:-local-backstage-artifacts}
+
+    # ECR for container registry
+    ecr:
+      endpoint: http://localhost:4566
+      region: us-east-1
+      registryId: "000000000000"
+
+    # Secrets Manager
+    secretsManager:
+      endpoint: http://localhost:4566
+      region: us-east-1
+
+# Search Configuration - disabled for simple local development
+# search:
+#   collators:
+#     catalog:
+#       type: 'software-catalog'
+#       schedule:
+#         frequency: { minutes: 10 }
+#         timeout: { minutes: 15 }
+
+# Proxy Configuration for Local Services
+proxy:
+  endpoints:
+    # Local Grafana
+    "/grafana/api":
+      target: "http://localhost:3001"
+      credentials: require
+
+    # Local Prometheus
+    "/prometheus":
+      target: "http://localhost:9090"
+      changeOrigin: true
+
+    # Local Jaeger
+    "/jaeger":
+      target: "http://localhost:16686"
+      changeOrigin: true
+
+    # Local Kiali
+    "/kiali":
+      target: "http://localhost:20001"
+      changeOrigin: true
+
+    # LocalStack AWS Services
+    "/aws":
+      target: "http://localhost:4566"
+      changeOrigin: true
+      pathRewrite:
+        "^/aws": ""
+
+# Development-specific integrations
+costInsights:
+  engineerCost: 100 # Lower cost for local development
+
+# Notifications (Local - Console only)
+notifications:
+  processors:
+    console:
+      enabled: true
+
+# Feature Flags for Local Development
+featureFlags:
+  local:
+    # Enable experimental features for local development
+    enableExperimentalPlugins: true
+    enableAdvancedPermissions: false
+    enableCostInsights: true
+    enableSecurityInsights: false
+
+# Local Plugin Configuration
+plugins:
+  # Disable heavy plugins for local development
+  lighthouse:
+    enabled: false
+  sonarqube:
+    enabled: false
+  snyk:
+    enabled: false
+
+  # Enable development plugins
+  devtools:
+    enabled: true
+  catalog:
+    processingInterval: 30 # Faster processing for local dev
+
+# Development Utilities
+devUtils:
+  # Enable hot reload for entity discovery
+  hotReload: true
+
+  # Mock external services when not available
+  mockServices:
+    enabled: true
+    services:
+      - argocd
+      - grafana
+      - prometheus
+
+  # Debug logging
+  debug:
+    enabled: true
+    logLevel: debug
