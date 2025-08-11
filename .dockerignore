@@ -1,8 +1,81 @@
+# Docker ignore file for IDP Backstage App
+
+# Git files
 .git
+.gitignore
+
+# Yarn cache and state
 .yarn/cache
 .yarn/install-state.gz
+
+# Node modules (will be installed in container)
 node_modules
-packages/*/src
-packages/*/node_modules
-plugins
+**/node_modules
+
+# Development files
+*.md
+README*
+CHANGELOG*
+LICENSE*
+
+# Build artifacts 
+dist
+build
+**/dist
+**/build
+**/*.tsbuildinfo
+
+# Test files
+*.test.*
+*.spec.*
+**/__tests__
+**/test
+**/tests
+coverage
+.nyc_output
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files (provided at runtime)
+.env*
 *.local.yaml
+!.env.example
+
+# Temporary files
+tmp
+temp
+.tmp
+
+# Cache
+.cache
+.eslintcache
+
+# CI/CD files
+.github
+.circleci
+.travis.yml
+.gitlab-ci.yml
+
+# Docker files
+Dockerfile*
+.dockerignore
+
+# Backstage specific
+.backstage
+
+# Playwright
+test-results
+playwright-report

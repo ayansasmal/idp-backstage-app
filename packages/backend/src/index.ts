@@ -55,6 +55,7 @@ backend.add(import('@backstage/plugin-permission-backend-module-allow-all-policy
 // argocd plugin - temporarily disabled for simpler local development  
 // backend.add(import('@roadiehq/backstage-plugin-argo-cd-backend'));
 
-// Legacy router registration removed - use proper backend modules instead
+// unleash feature flags plugin
+backend.add(import('@internal/plugin-unleash-feature-flags-backend'));
 
 backend.start();

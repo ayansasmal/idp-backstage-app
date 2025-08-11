@@ -184,7 +184,7 @@ export const FeatureFlagsPage = () => {
   const fetchFlags = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/feature-flags');
+      const response = await fetch('/api/unleash-feature-flags');
       const data = await response.json();
       const processedFlags = data.map((flag: any) => {
         const [tenant, environment, application, ...flagParts] = flag.name.split('.');
@@ -253,7 +253,7 @@ export const FeatureFlagsPage = () => {
   // Create new feature flag
   const handleCreateFlag = async () => {
     try {
-      const response = await fetch('/api/feature-flags', {
+      const response = await fetch('/api/unleash-feature-flags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -275,7 +275,7 @@ export const FeatureFlagsPage = () => {
   // Toggle flag status
   const handleToggleFlag = async (flagName: string) => {
     try {
-      const response = await fetch(`/api/feature-flags/${encodeURIComponent(flagName)}/toggle`, {
+      const response = await fetch(`/api/unleash-feature-flags/${encodeURIComponent(flagName)}/toggle`, {
         method: 'PATCH',
       });
 
@@ -296,7 +296,7 @@ export const FeatureFlagsPage = () => {
   // Delete feature flag
   const handleDeleteFlag = async (flagName: string) => {
     try {
-      const response = await fetch(`/api/feature-flags/${encodeURIComponent(flagName)}`, {
+      const response = await fetch(`/api/unleash-feature-flags/${encodeURIComponent(flagName)}`, {
         method: 'DELETE',
       });
 

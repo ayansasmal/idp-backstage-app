@@ -1,4 +1,4 @@
-# This dockerfile builds an image for the backend package.
+# This dockerfile builds an image for the IDP Backstage App backend package.
 # It should be executed with the root of the repo as docker context.
 #
 # Before building this image, be sure to have run the following commands in the repo root:
@@ -9,8 +9,12 @@
 #
 # Once the commands have been run, you can build the image using `yarn build-image`
 #
-# Alternatively, there is also a multi-stage Dockerfile documented here:
-# https://backstage.io/docs/deployment/docker#multi-stage-build
+# For IDP platform deployment, this image includes:
+# - Unleash Feature Flags integration
+# - AWS Cognito authentication support  
+# - GitHub OAuth authentication
+# - Guest authentication for development
+# - Multi-environment configuration support
 
 FROM node:20-bookworm-slim
 
@@ -24,12 +28,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get install -y --no-install-recommends python3 g++ build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-# Install sqlite3 dependencies. You can skip this if you don't use sqlite3 in the image,
-# in which case you should also move better-sqlite3 to "devDependencies" in package.json.
+# Install sqlite3 dependencies and curl for health checks
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
-    apt-get install -y --no-install-recommends libsqlite3-dev && \
+    apt-get install -y --no-install-recommends libsqlite3-dev curl && \
     rm -rf /var/lib/apt/lists/*
 
 # From here on we use the least-privileged `node` user to run the backend.
@@ -67,4 +70,13 @@ COPY --chown=node:node examples ./examples
 COPY --chown=node:node packages/backend/dist/bundle.tar.gz app-config*.yaml ./
 RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
 
-CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
+# Health check for Kubernetes/ArgoCD deployments
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:7007/api/unleash-feature-flags/health/status || exit 1
+
+# Expose the backend port
+EXPOSE 7007
+
+# Run the backend with appropriate configuration
+# For IDP platform, use app-config.yaml and environment-specific overrides
+CMD ["node", "packages/backend", "--config", "app-config.yaml"]

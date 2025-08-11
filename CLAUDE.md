@@ -209,3 +209,119 @@ yarn new  # Follow prompts to create plugin
 - Frontend debugging via React DevTools
 - Database inspection: SQLite browser for development database
 - E2E test debugging: Playwright trace files in `node_modules/.cache/e2e-test-results`
+
+## Latest Platform Updates
+
+### 🚀 Unleash Feature Flags Integration (JUST COMPLETED)
+**Status**: Complete enterprise-grade feature flags API with Unleash OSS integration
+
+#### **Decoupled Backend Plugin Architecture**
+- Created `@internal/plugin-unleash-feature-flags-backend` as standalone Backstage plugin
+- Fully decoupled from Backstage implementation for better maintainability
+- Professional plugin structure with proper TypeScript types and error handling
+
+#### **Comprehensive API Endpoints**
+```bash
+# Feature Flag Management
+GET    /api/unleash-feature-flags          # List flags with optional filtering
+POST   /api/unleash-feature-flags          # Create new feature flag
+GET    /api/unleash-feature-flags/:name    # Get feature flag details
+PATCH  /api/unleash-feature-flags/:name/toggle  # Toggle feature flag state
+DELETE /api/unleash-feature-flags/:name    # Delete (archive) feature flag
+
+# Feature Flag Evaluation
+POST   /api/unleash-feature-flags/evaluate/:name  # Evaluate flag for user context
+
+# Health Monitoring
+GET    /api/unleash-feature-flags/health/status   # Service health check
+```
+
+#### **Dual-Mode Operation**
+- **Development Mode**: Uses mock data when no Unleash token is configured
+- **Production Mode**: Full integration with Unleash OSS when deployed on IDP platform
+- **Graceful Fallback**: Automatic fallback to mock data if Unleash is unavailable
+
+#### **Configuration Support**
+```yaml
+unleash:
+  url: http://localhost:4242/api              # Unleash client API URL
+  adminUrl: http://localhost:4242/api/admin   # Unleash admin API URL
+  apiToken: your-unleash-api-token            # API token for admin operations
+  instanceId: idp-backstage                   # Unique instance identifier
+```
+
+#### **Enterprise Features**
+- **Naming Convention**: `{tenant}.{environment}.{application}.{flagName}`
+- **Multi-Tenant Support**: Support for multiple tenants and environments
+- **Error Handling**: Comprehensive error handling with proper HTTP status codes
+- **Security**: JWT validation and authentication policies
+- **Observability**: Structured logging and health monitoring
+
+### 🐳 Production Docker Support (JUST ADDED)
+**Status**: Multi-stage Docker builds ready for IDP platform deployment
+
+#### **Container Features**
+- **Multi-Stage Build**: Optimized for production deployment
+- **Health Checks**: Kubernetes-ready health endpoints for ArgoCD
+- **Security**: Non-root user, minimal attack surface
+- **Signal Handling**: Uses dumb-init for proper container lifecycle
+- **Size Optimization**: Optimized .dockerignore for minimal build context
+
+#### **Build Options**
+```bash
+# Backend-only container (recommended for microservices)
+docker build -f packages/backend/Dockerfile -t idp/backstage-backend .
+
+# Full application container (includes frontend static assets)
+docker build -t idp/backstage-app .
+
+# Using yarn build-image (backend only)
+yarn build-image
+```
+
+#### **Container Configuration**
+- **Health Check**: `/api/unleash-feature-flags/health/status` endpoint
+- **Exposed Port**: 7007 (backend)
+- **User**: node (non-root for security)
+- **Base Image**: node:20-bookworm-slim
+- **Runtime Dependencies**: curl, sqlite3, python3, build tools
+
+#### **ArgoCD Deployment Ready**
+The containers include health checks and proper configuration for Kubernetes deployment:
+```yaml
+# Example Kubernetes deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: backstage
+        image: idp/backstage-app:latest
+        ports:
+        - containerPort: 7007
+        livenessProbe:
+          httpGet:
+            path: /api/unleash-feature-flags/health/status
+            port: 7007
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/unleash-feature-flags/health/status
+            port: 7007
+          initialDelaySeconds: 5
+```
+
+### Frontend Integration
+- Updated existing feature flags UI to consume new API endpoints
+- Seamless transition from old to new backend
+- All existing UI functionality preserved and enhanced
+- Real-time feature flag management through Backstage interface
+
+### Next Steps for IDP Integration
+1. **ArgoCD Workflows**: Deploy using Argo Workflows on IDP platform
+2. **Unleash OSS Connection**: Configure connection to platform Unleash instance
+3. **Service Mesh**: Integration with Istio for secure service communication
+4. **Monitoring**: Connect with platform Prometheus/Grafana stack
