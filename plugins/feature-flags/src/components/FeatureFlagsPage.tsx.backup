@@ -141,39 +141,44 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// Interface definitions in compatible format for webpack
-const createFeatureFlag = (data: any) => ({
-  name: data.name || '',
-  enabled: data.enabled || false,
-  description: data.description || '',
-  tenant: data.tenant || '',
-  environment: data.environment || '',
-  application: data.application || '',
-  flagName: data.flagName || '',
-  createdAt: data.createdAt || '',
-  lastModified: data.lastModified || '',
-});
+interface FeatureFlag {
+  name: string;
+  enabled?: boolean;
+  description?: string;
+  tenant?: string;
+  environment?: string;
+  application?: string;
+  flagName?: string;
+  createdAt?: string;
+  lastModified?: string;
+}
 
-const createFlagForm = () => ({
-  tenant: '',
-  environment: '',
-  application: '',
-  flagName: '',
-  description: '',
-});
+interface CreateFlagForm {
+  tenant: string;
+  environment: string;
+  application: string;
+  flagName: string;
+  description: string;
+}
 
 export const FeatureFlagsPage = () => {
   const classes = useStyles();
-  const [flags, setFlags] = useState<any[]>([]);
-  const [filteredFlags, setFilteredFlags] = useState<any[]>([]);
+  const [flags, setFlags] = useState<FeatureFlag[]>([]);
+  const [filteredFlags, setFilteredFlags] = useState<FeatureFlag[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [environmentFilter, setEnvironmentFilter] = useState('');
   const [tenantFilter, setTenantFilter] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedFlag, setSelectedFlag] = useState<any | null>(null);
-  const [form, setForm] = useState<any>(createFlagForm());
+  const [selectedFlag, setSelectedFlag] = useState<FeatureFlag | null>(null);
+  const [form, setForm] = useState<CreateFlagForm>({
+    tenant: '',
+    environment: '',
+    application: '',
+    flagName: '',
+    description: '',
+  });
 
   // Fetch feature flags
   const fetchFlags = async () => {
@@ -183,7 +188,7 @@ export const FeatureFlagsPage = () => {
       const data = await response.json();
       const processedFlags = data.map((flag: any) => {
         const [tenant, environment, application, ...flagParts] = flag.name.split('.');
-        return createFeatureFlag({
+        return {
           name: flag.name,
           enabled: flag.enabled || false,
           description: flag.description || '',
@@ -193,7 +198,7 @@ export const FeatureFlagsPage = () => {
           flagName: flagParts.join('.'),
           createdAt: flag.createdAt || new Date().toISOString(),
           lastModified: flag.lastModified || new Date().toISOString(),
-        });
+        };
       });
       setFlags(processedFlags);
       setFilteredFlags(processedFlags);
@@ -239,10 +244,10 @@ export const FeatureFlagsPage = () => {
   const uniqueTenants = [...new Set(flags.map(flag => flag.tenant).filter(Boolean))];
 
   // Handle form input changes
-  const handleInputChange = (field: string) => (
+  const handleInputChange = (field: keyof CreateFlagForm) => (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setForm((prev: any) => ({ ...prev, [field]: event.target.value }));
+    setForm(prev => ({ ...prev, [field]: event.target.value }));
   };
 
   // Create new feature flag
@@ -255,7 +260,7 @@ export const FeatureFlagsPage = () => {
       });
 
       if (response.ok) {
-        setForm(createFlagForm());
+        setForm({ tenant: '', environment: '', application: '', flagName: '', description: '' });
         setCreateDialogOpen(false);
         fetchFlags(); // Refresh the list
       } else {
@@ -310,7 +315,7 @@ export const FeatureFlagsPage = () => {
   };
 
   // Handle menu actions
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, flag: any) => {
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, flag: FeatureFlag) => {
     setMenuAnchorEl(event.currentTarget);
     setSelectedFlag(flag);
   };
@@ -483,7 +488,7 @@ export const FeatureFlagsPage = () => {
                       <Box className={classes.flagDetails}>
                         {/* Description */}
                         {flag.description && (
-                          <Typography variant="body2" color="textSecondary" style={{ fontStyle: 'italic' }}>
+                          <Typography variant="body2" className="text-gray-600 italic">
                             {flag.description}
                           </Typography>
                         )}
@@ -495,6 +500,7 @@ export const FeatureFlagsPage = () => {
                               size="small"
                               icon={<BusinessIcon />}
                               label={flag.tenant}
+                              className="feature-badge-tenant text-xs"
                             />
                           )}
 
@@ -504,6 +510,7 @@ export const FeatureFlagsPage = () => {
                               icon={<ComputerIcon />}
                               label={flag.environment}
                               color={getEnvironmentColor(flag.environment)}
+                              className="text-xs"
                             />
                           )}
 
@@ -513,6 +520,7 @@ export const FeatureFlagsPage = () => {
                               icon={<AppsIcon />}
                               label={flag.application}
                               variant="outlined"
+                              className="text-xs"
                             />
                           )}
                         </Box>
@@ -522,11 +530,12 @@ export const FeatureFlagsPage = () => {
                           <Chip
                             size="small"
                             label={flag.enabled ? 'Enabled' : 'Disabled'}
-                            color={flag.enabled ? 'primary' : 'default'}
+                            className={`feature-badge text-xs font-medium ${flag.enabled ? 'feature-badge-enabled' : 'feature-badge-disabled'
+                              }`}
                           />
 
                           {flag.lastModified && (
-                            <Typography variant="caption" color="textSecondary">
+                            <Typography variant="caption" className="text-gray-400">
                               Updated {new Date(flag.lastModified).toLocaleDateString()}
                             </Typography>
                           )}
@@ -578,8 +587,8 @@ export const FeatureFlagsPage = () => {
               Create New Feature Flag
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} style={{ marginTop: 8 }}>
+          <DialogContent className="space-y-4">
+            <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Tenant"
@@ -643,7 +652,7 @@ export const FeatureFlagsPage = () => {
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions style={{ padding: '16px 24px 24px' }}>
+          <DialogActions className="px-6 pb-4">
             <Button onClick={() => setCreateDialogOpen(false)}>
               Cancel
             </Button>
@@ -674,9 +683,10 @@ export const FeatureFlagsPage = () => {
         >
           <MenuItem
             onClick={() => selectedFlag && handleDeleteFlag(selectedFlag.name)}
+            className="text-red-600"
           >
             <ListItemIcon>
-              <DeleteIcon color="error" />
+              <DeleteIcon className="text-red-600" />
             </ListItemIcon>
             <ListItemText>Delete Flag</ListItemText>
           </MenuItem>

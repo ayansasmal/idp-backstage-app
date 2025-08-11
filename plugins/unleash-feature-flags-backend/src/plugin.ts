@@ -23,12 +23,11 @@ export const unleashFeatureFlagsPlugin = createBackendPlugin({
         logger,
         httpRouter,
       }) {
-        httpRouter.use(
-          await createRouter({
-            logger,
-            config,
-          }),
-        );
+        const router = await createRouter({
+          logger,
+          config,
+        });
+        httpRouter.use(router as any);
         httpRouter.addAuthPolicy({
           path: '/health',
           allow: 'unauthenticated',

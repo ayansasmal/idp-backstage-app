@@ -267,24 +267,52 @@ unleash:
 - **Signal Handling**: Uses dumb-init for proper container lifecycle
 - **Size Optimization**: Optimized .dockerignore for minimal build context
 
-#### **Build Options**
+#### **Complete Frontend + Backend Docker Support**
 ```bash
-# Backend-only container (recommended for microservices)
-docker build -f packages/backend/Dockerfile -t idp/backstage-backend .
+# Multi-stage builds with three targets:
 
-# Full application container (includes frontend static assets)
+# 1. Full-stack single container (frontend + backend)
 docker build -t idp/backstage-app .
+# OR using docker-compose
+./deploy.sh fullstack
 
-# Using yarn build-image (backend only)
+# 2. Backend-only container (microservices)
+docker build --target backend -t idp/backstage-backend .
+# OR
+./deploy.sh backend-only
+
+# 3. Frontend-only container (nginx + static files)
+docker build --target frontend -t idp/backstage-frontend .
+# OR 
+./deploy.sh microservices
+
+# 4. Legacy backend-only (packages/backend/Dockerfile)
 yarn build-image
 ```
 
+#### **Deployment Options**
+```bash
+# Easy deployment script with multiple options
+./deploy.sh fullstack              # Single container with both services
+./deploy.sh microservices -u      # Separate containers + Unleash
+./deploy.sh backend-only -d       # Backend only in background
+./deploy.sh build-only             # Just build the containers
+
+# Docker Compose profiles
+docker-compose --profile fullstack up      # Single container
+docker-compose --profile microservices up  # Separate services
+docker-compose --profile unleash up        # Include Unleash OSS
+```
+
 #### **Container Configuration**
-- **Health Check**: `/api/unleash-feature-flags/health/status` endpoint
-- **Exposed Port**: 7007 (backend)
+- **Frontend Port**: 3000 (nginx serving React app)
+- **Backend Port**: 7007 (Node.js API server)
+- **Health Checks**: 
+  - Frontend: `http://localhost:3000/health`
+  - Backend: `http://localhost:7007/api/unleash-feature-flags/health/status`
 - **User**: node (non-root for security)
-- **Base Image**: node:20-bookworm-slim
-- **Runtime Dependencies**: curl, sqlite3, python3, build tools
+- **Base Images**: node:20-bookworm-slim, nginx:alpine
+- **Process Management**: supervisord for multi-process containers
 
 #### **ArgoCD Deployment Ready**
 The containers include health checks and proper configuration for Kubernetes deployment:
@@ -320,8 +348,43 @@ spec:
 - All existing UI functionality preserved and enhanced
 - Real-time feature flag management through Backstage interface
 
+### Complete Architecture Overview
+
+#### **Frontend (Port 3000)**
+- **Technology**: React 18 + Material-UI served by nginx
+- **Features**: 
+  - Client-side routing with React Router
+  - Real-time feature flag management UI
+  - Service catalog, scaffolder, TechDocs
+  - AWS Cognito + GitHub OAuth + Guest authentication
+- **Container**: nginx:alpine with built static assets
+- **Health Check**: `GET /health`
+
+#### **Backend (Port 7007)**
+- **Technology**: Node.js + Express with Backstage plugin system
+- **Features**:
+  - RESTful API for all Backstage functionality
+  - Unleash Feature Flags integration (`/api/unleash-feature-flags`)
+  - AWS Cognito authentication backend
+  - SQLite (dev) / PostgreSQL (prod) database
+- **Container**: node:20-bookworm-slim with built application
+- **Health Check**: `GET /api/unleash-feature-flags/health/status`
+
+#### **Communication Flow**
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Frontend      │    │    Backend       │    │   Unleash OSS   │
+│   (nginx:3000)  │───▶│  (node:7007)     │───▶│   (optional)    │
+│                 │    │                  │    │   (:4242)       │
+│ • React App     │    │ • REST APIs      │    │ • Feature Flags │
+│ • Static Assets │    │ • Authentication │    │ • Admin UI      │
+│ • Proxy /api/*  │    │ • Database       │    │ • Strategies    │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
 ### Next Steps for IDP Integration
 1. **ArgoCD Workflows**: Deploy using Argo Workflows on IDP platform
-2. **Unleash OSS Connection**: Configure connection to platform Unleash instance
+2. **Unleash OSS Connection**: Configure connection to platform Unleash instance  
 3. **Service Mesh**: Integration with Istio for secure service communication
 4. **Monitoring**: Connect with platform Prometheus/Grafana stack
+5. **Database**: Use platform PostgreSQL for production deployments

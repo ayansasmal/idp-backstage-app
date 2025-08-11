@@ -1,0 +1,117 @@
+# Docker Compose for IDP Backstage App
+# This provides multiple deployment options for the Backstage application
+
+version: '3.8'
+
+services:
+  # Full-stack single container (for development/testing)
+  backstage-fullstack:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: fullstack
+    ports:
+      - "3000:3000"  # Frontend
+      - "7007:7007"  # Backend API
+    environment:
+      - NODE_ENV=production
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - ./app-config.yaml:/app/app-config.yaml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health", "&&", "curl", "-f", "http://localhost:7007/api/unleash-feature-flags/health/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    profiles: ["fullstack"]
+
+  # Backend service only
+  backstage-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    ports:
+      - "7007:7007"
+    environment:
+      - NODE_ENV=production
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - ./app-config.yaml:/app/app-config.yaml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7007/api/unleash-feature-flags/health/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    profiles: ["microservices"]
+
+  # Frontend service only
+  backstage-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backstage-backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    profiles: ["microservices"]
+
+  # PostgreSQL database (optional - for production use)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=backstage_plugin_catalog
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles: ["microservices", "fullstack"]
+
+  # Unleash OSS (optional - for feature flags)
+  unleash:
+    image: unleashorg/unleash-server:latest
+    ports:
+      - "4242:4242"
+    environment:
+      - DATABASE_URL=postgres://postgres:secret@postgres:5432/unleash
+      - DATABASE_SSL=false
+      - LOG_LEVEL=warn
+      - INIT_FRONTEND_API_TOKENS=default:development.unleash-insecure-frontend-api-token
+      - INIT_CLIENT_API_TOKENS=default:development.unleash-insecure-api-token
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4242/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    profiles: ["unleash"]
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: idp-backstage-network
