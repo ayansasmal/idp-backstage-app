@@ -1,0 +1,76 @@
+# ConfigMap for non-sensitive environment variables
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backstage-env-config
+  namespace: backstage
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: idp-platform
+data:
+  # Application Configuration
+  APP_BASE_URL: "https://backstage.idp-platform.local"
+  ORGANIZATION_NAME: "IDP Platform Team"
+  BACKEND_BASE_URL: "https://backstage.idp-platform.local"
+  PORT: "7007"
+  HOST: "0.0.0.0"
+  
+  # GitHub Configuration (non-sensitive)
+  GITHUB_ORG: "your-github-organization"
+  GITHUB_DEFAULT_BRANCH: "main"
+  GITHUB_SYNC_FREQUENCY: "10"
+  
+  # CORS Configuration
+  CORS_ORIGIN: "https://backstage.idp-platform.local"
+  
+  # AWS Configuration (non-sensitive)
+  AWS_REGION: "us-east-1"
+  TECHDOCS_S3_BUCKET: "idp-backstage-techdocs"
+  
+  # ArgoCD Configuration (non-sensitive)
+  ARGOCD_SERVER_URL: "https://argocd.idp-platform.local"
+  ARGOCD_USERNAME: "admin"
+  ARGOCD_STAGING_SERVER_URL: "https://argocd-staging.idp-platform.local"
+  
+  # Argo Workflows Configuration
+  ARGO_WORKFLOWS_SERVER_URL: "https://argo-workflows.idp-platform.local"
+  ARGO_WORKFLOWS_NAMESPACE: "argo"
+  ARGO_WORKFLOWS_STAGING_SERVER_URL: "https://argo-workflows-staging.idp-platform.local"
+  ARGO_WORKFLOWS_STAGING_NAMESPACE: "argo-staging"
+  
+  # Monitoring & Observability (non-sensitive)
+  GRAFANA_DOMAIN: "grafana.idp-platform.local"
+  GRAFANA_URL: "https://grafana.idp-platform.local"
+  PROMETHEUS_URL: "https://prometheus.idp-platform.local"
+  JAEGER_URL: "https://jaeger.idp-platform.local"
+  KIALI_URL: "https://kiali.idp-platform.local"
+  LIGHTHOUSE_URL: "https://lighthouse.idp-platform.local"
+  
+  # Unleash Configuration
+  UNLEASH_URL: "https://unleash.idp-platform.local"
+  UNLEASH_ENVIRONMENT: "production"
+  
+  # Quality Tools (non-sensitive)
+  SONARQUBE_URL: "https://sonarqube.idp-platform.local"
+  SNYK_ORG_ID: "your-snyk-org-id"
+  
+  # Cost Management
+  ENGINEER_COST_PER_HOUR: "200"
+  
+  # Kubernetes Configuration (non-sensitive)
+  KUBERNETES_CLUSTER_URL: "https://kubernetes.idp-platform.local"
+  KUBERNETES_CLUSTER_NAME: "idp-cluster"
+  KUBERNETES_SKIP_TLS_VERIFY: "false"
+  
+  # Email Configuration (non-sensitive)
+  SMTP_HOST: "smtp.company.com"
+  SMTP_PORT: "587"
+  SMTP_SECURE: "false"
+  
+  # JIRA Integration (non-sensitive)
+  JIRA_HOST: "jira.company.com"
+  
+  # Scaffolder Configuration
+  SCAFFOLDER_DEFAULT_AUTHOR_NAME: "IDP Platform"
+  SCAFFOLDER_DEFAULT_AUTHOR_EMAIL: "platform@company.com"

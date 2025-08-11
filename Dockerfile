@@ -1,4 +1,5 @@
 # Multi-stage Dockerfile for IDP Backstage App
+# Optimized for Kubernetes deployment and Argo Workflows CI/CD
 # This builds both frontend and backend for a complete Backstage deployment
 
 # ==========================================
@@ -75,7 +76,7 @@ RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--no-node-snapshot"
 
-# Health check
+# Health check for Kubernetes readiness/liveness probes
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:7007/api/unleash-feature-flags/health/status || exit 1
 
@@ -155,18 +156,30 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         dumb-init && \
     rm -rf /var/lib/apt/lists/*
 
-# Use non-root user for app files, but supervisor runs as root
+# Create app directory with proper ownership before WORKDIR
+RUN mkdir -p /app && chown -R node:node /app
 WORKDIR /app
+# Ensure ownership after WORKDIR
+USER root
+RUN chown -R node:node /app
 
-# Copy build configuration
-COPY --from=build --chown=node:node /app/package.json /app/yarn.lock /app/backstage.json ./
+# Copy files needed by Yarn
+COPY --from=build --chown=node:node /app/.yarn ./.yarn
+COPY --from=build --chown=node:node /app/.yarnrc.yml ./
+COPY --from=build --chown=node:node /app/backstage.json ./
 
-# Copy built backend
-COPY --from=build --chown=node:node /app/packages/backend/dist ./packages/backend/dist
-COPY --from=build --chown=node:node /app/packages/backend/package.json ./packages/backend/
-COPY --from=build --chown=node:node /app/plugins ./plugins
+# Copy repo skeleton first, to avoid unnecessary docker cache invalidation.
+# The skeleton contains the package.json of each package in the monorepo,
+# and along with yarn.lock and the root package.json, that's enough to run yarn install.
+COPY --from=build --chown=node:node /app/yarn.lock /app/package.json /app/packages/backend/dist/skeleton.tar.gz ./
+RUN tar xzf skeleton.tar.gz && rm skeleton.tar.gz
+
+# Copy examples (needed by Backstage catalog)
 COPY --from=build --chown=node:node /app/examples ./examples
-COPY --from=build --chown=node:node /app/app-config*.yaml ./
+
+# Then copy the rest of the backend bundle, along with any other files we might want.
+COPY --from=build --chown=node:node /app/packages/backend/dist/bundle.tar.gz /app/app-config*.yaml ./
+RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
 
 # Copy built frontend to nginx directory
 COPY --from=build /app/packages/app/dist /usr/share/nginx/html
@@ -174,7 +187,7 @@ COPY --from=build /app/packages/app/dist /usr/share/nginx/html
 # Enable Corepack and install production dependencies
 RUN corepack enable
 RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
-    yarn workspaces focus --production backend
+    yarn workspaces focus --all --production && rm -rf "$(yarn cache clean)"
 
 # Create nginx configuration
 RUN cat > /etc/nginx/sites-available/backstage << 'EOF'
@@ -232,7 +245,7 @@ RUN cat > /etc/supervisor/conf.d/backstage.conf << 'EOF'
 [program:backend]
 command=node packages/backend --config app-config.yaml
 directory=/app
-user=node
+user=root
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
@@ -251,7 +264,12 @@ stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 EOF
 
-# Health check for both services
+# Environment variables for production
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--no-node-snapshot"
+
+# Health check for Kubernetes (both services)
+# Note: In K8s, use separate readiness/liveness probes for each service
 HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
     CMD curl -f http://localhost:3000/health && curl -f http://localhost:7007/api/unleash-feature-flags/health/status || exit 1
 

@@ -46,7 +46,7 @@
     "react-dom": "^18.0.2",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
-    "@internal/plugin-feature-flags": "file:../../plugins/feature-flags"
+    "@internal/plugin-feature-flags": "link:../../plugins/feature-flags"
   },
   "devDependencies": {
     "@backstage/test-utils": "^1.7.10",

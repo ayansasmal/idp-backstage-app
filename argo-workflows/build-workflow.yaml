@@ -1,0 +1,131 @@
+# Argo Workflows template for building Backstage Docker images
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: backstage-build
+  namespace: argo
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/component: ci-cd
+    app.kubernetes.io/part-of: idp-platform
+spec:
+  entrypoint: build-and-push
+  arguments:
+    parameters:
+    - name: git-url
+      value: "https://github.com/your-org/idp-backstage-app.git"
+    - name: git-revision
+      value: "main"
+    - name: image-tag
+      value: "latest"
+    - name: registry-url
+      value: "000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:4566"
+
+  templates:
+  - name: build-and-push
+    dag:
+      tasks:
+      - name: clone-repo
+        template: git-clone
+        arguments:
+          parameters:
+          - name: git-url
+            value: "{{workflow.parameters.git-url}}"
+          - name: git-revision
+            value: "{{workflow.parameters.git-revision}}"
+      
+      - name: build-backend
+        template: docker-build
+        arguments:
+          parameters:
+          - name: dockerfile
+            value: "Dockerfile"
+          - name: target
+            value: "backend"
+          - name: image-name
+            value: "{{workflow.parameters.registry-url}}/idp/backstage-backend:{{workflow.parameters.image-tag}}"
+        depends: "clone-repo"
+      
+      - name: build-frontend
+        template: docker-build
+        arguments:
+          parameters:
+          - name: dockerfile
+            value: "Dockerfile"
+          - name: target
+            value: "frontend"
+          - name: image-name
+            value: "{{workflow.parameters.registry-url}}/idp/backstage-frontend:{{workflow.parameters.image-tag}}"
+        depends: "clone-repo"
+      
+      - name: build-fullstack
+        template: docker-build
+        arguments:
+          parameters:
+          - name: dockerfile
+            value: "Dockerfile"
+          - name: target
+            value: "fullstack"
+          - name: image-name
+            value: "{{workflow.parameters.registry-url}}/idp/backstage-app:{{workflow.parameters.image-tag}}"
+        depends: "clone-repo"
+
+  - name: git-clone
+    inputs:
+      parameters:
+      - name: git-url
+      - name: git-revision
+    container:
+      image: alpine/git:latest
+      command: [sh, -c]
+      args:
+      - |
+        git clone {{inputs.parameters.git-url}} /workspace
+        cd /workspace
+        git checkout {{inputs.parameters.git-revision}}
+        ls -la
+      volumeMounts:
+      - name: workspace
+        mountPath: /workspace
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+
+  - name: docker-build
+    inputs:
+      parameters:
+      - name: dockerfile
+      - name: target
+      - name: image-name
+    container:
+      image: gcr.io/kaniko-project/executor:latest
+      args:
+      - --context=/workspace
+      - --dockerfile=/workspace/{{inputs.parameters.dockerfile}}
+      - --target={{inputs.parameters.target}}
+      - --destination={{inputs.parameters.image-name}}
+      - --cache=true
+      - --compressed-caching=false
+      - --skip-tls-verify
+      - --insecure
+      - --log-format=text
+      - --verbosity=info
+      volumeMounts:
+      - name: workspace
+        mountPath: /workspace
+      - name: docker-config
+        mountPath: /kaniko/.docker
+        readOnly: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+
+  volumes:
+  - name: workspace
+    emptyDir: {}
+  - name: docker-config
+    secret:
+      secretName: docker-registry-config
+      items:
+      - key: config.json
+        path: config.json

@@ -1,7 +1,8 @@
 # Docker Compose for IDP Backstage App
 # This provides multiple deployment options for the Backstage application
-
-version: '3.8'
+#
+# For AWS RDS: Create a .env file with your database credentials
+# See .env.example for the required environment variables
 
 services:
   # Full-stack single container (for development/testing)
@@ -15,10 +16,106 @@ services:
       - "7007:7007"  # Backend API
     environment:
       - NODE_ENV=production
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret
+      # Core Configuration
+      - APP_BASE_URL
+      - ORGANIZATION_NAME
+      - BACKEND_SECRET
+      - BACKEND_BASE_URL
+      - PORT
+      - HOST
+      
+      # Database Configuration (AWS RDS)
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - POSTGRES_SSL_REQUIRE=false
+      - POSTGRES_SSL_REJECT_UNAUTHORIZED=false
+      
+      # GitHub Integration & OAuth2
+      - GITHUB_TOKEN
+      - GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET
+      - GITHUB_APP_ID
+      - GITHUB_WEBHOOK_SECRET
+      - GITHUB_PRIVATE_KEY
+      - GITHUB_ORG
+      - GITHUB_DEFAULT_BRANCH
+      - GITHUB_SYNC_FREQUENCY
+      
+      # CORS Configuration
+      - CORS_ORIGIN
+      
+      # AWS Configuration
+      - AWS_REGION
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - TECHDOCS_S3_BUCKET
+      
+      # ArgoCD Configuration
+      - ARGOCD_SERVER_URL
+      - ARGOCD_USERNAME
+      - ARGOCD_PASSWORD
+      - ARGOCD_AUTH_TOKEN
+      - ARGOCD_STAGING_SERVER_URL
+      - ARGOCD_STAGING_AUTH_TOKEN
+      
+      # Argo Workflows Configuration
+      - ARGO_WORKFLOWS_SERVER_URL
+      - ARGO_WORKFLOWS_AUTH_TOKEN
+      - ARGO_WORKFLOWS_NAMESPACE
+      - ARGO_WORKFLOWS_STAGING_SERVER_URL
+      - ARGO_WORKFLOWS_STAGING_AUTH_TOKEN
+      - ARGO_WORKFLOWS_STAGING_NAMESPACE
+      
+      # Monitoring & Observability
+      - GRAFANA_DOMAIN
+      - GRAFANA_URL
+      - GRAFANA_API_KEY
+      - PROMETHEUS_URL
+      - PROMETHEUS_API_KEY
+      - JAEGER_URL
+      - KIALI_URL
+      - KIALI_SERVICE_ACCOUNT_TOKEN
+      - LIGHTHOUSE_URL
+      
+      # Unleash Feature Flags
+      - UNLEASH_URL
+      - UNLEASH_API_TOKEN
+      - UNLEASH_CLIENT_KEY
+      - UNLEASH_ENVIRONMENT
+      
+      # Quality Tools
+      - SONARQUBE_URL
+      - SONARQUBE_API_KEY
+      - SNYK_TOKEN
+      - SNYK_ORG_ID
+      
+      # Cost Management
+      - ENGINEER_COST_PER_HOUR
+      
+      # Kubernetes Configuration
+      - KUBERNETES_CLUSTER_URL
+      - KUBERNETES_CLUSTER_NAME
+      - KUBERNETES_SKIP_TLS_VERIFY
+      - KUBERNETES_SERVICE_ACCOUNT_TOKEN
+      - KUBERNETES_CA_FILE
+      
+      # Email Configuration
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_SECURE
+      - SMTP_USERNAME
+      - SMTP_PASSWORD
+      
+      # JIRA Integration
+      - JIRA_HOST
+      - JIRA_TOKEN
+      
+      # Scaffolder Configuration
+      - SCAFFOLDER_DEFAULT_AUTHOR_NAME
+      - SCAFFOLDER_DEFAULT_AUTHOR_EMAIL
     volumes:
       - ./app-config.yaml:/app/app-config.yaml:ro
     healthcheck:
@@ -39,10 +136,106 @@ services:
       - "7007:7007"
     environment:
       - NODE_ENV=production
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret
+      # Core Configuration
+      - APP_BASE_URL
+      - ORGANIZATION_NAME
+      - BACKEND_SECRET
+      - BACKEND_BASE_URL
+      - PORT
+      - HOST
+      
+      # Database Configuration (AWS RDS)
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - POSTGRES_SSL_REQUIRE=false
+      - POSTGRES_SSL_REJECT_UNAUTHORIZED=false
+      
+      # GitHub Integration & OAuth2
+      - GITHUB_TOKEN
+      - GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET
+      - GITHUB_APP_ID
+      - GITHUB_WEBHOOK_SECRET
+      - GITHUB_PRIVATE_KEY
+      - GITHUB_ORG
+      - GITHUB_DEFAULT_BRANCH
+      - GITHUB_SYNC_FREQUENCY
+      
+      # CORS Configuration
+      - CORS_ORIGIN
+      
+      # AWS Configuration
+      - AWS_REGION
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - TECHDOCS_S3_BUCKET
+      
+      # ArgoCD Configuration
+      - ARGOCD_SERVER_URL
+      - ARGOCD_USERNAME
+      - ARGOCD_PASSWORD
+      - ARGOCD_AUTH_TOKEN
+      - ARGOCD_STAGING_SERVER_URL
+      - ARGOCD_STAGING_AUTH_TOKEN
+      
+      # Argo Workflows Configuration
+      - ARGO_WORKFLOWS_SERVER_URL
+      - ARGO_WORKFLOWS_AUTH_TOKEN
+      - ARGO_WORKFLOWS_NAMESPACE
+      - ARGO_WORKFLOWS_STAGING_SERVER_URL
+      - ARGO_WORKFLOWS_STAGING_AUTH_TOKEN
+      - ARGO_WORKFLOWS_STAGING_NAMESPACE
+      
+      # Monitoring & Observability
+      - GRAFANA_DOMAIN
+      - GRAFANA_URL
+      - GRAFANA_API_KEY
+      - PROMETHEUS_URL
+      - PROMETHEUS_API_KEY
+      - JAEGER_URL
+      - KIALI_URL
+      - KIALI_SERVICE_ACCOUNT_TOKEN
+      - LIGHTHOUSE_URL
+      
+      # Unleash Feature Flags
+      - UNLEASH_URL
+      - UNLEASH_API_TOKEN
+      - UNLEASH_CLIENT_KEY
+      - UNLEASH_ENVIRONMENT
+      
+      # Quality Tools
+      - SONARQUBE_URL
+      - SONARQUBE_API_KEY
+      - SNYK_TOKEN
+      - SNYK_ORG_ID
+      
+      # Cost Management
+      - ENGINEER_COST_PER_HOUR
+      
+      # Kubernetes Configuration
+      - KUBERNETES_CLUSTER_URL
+      - KUBERNETES_CLUSTER_NAME
+      - KUBERNETES_SKIP_TLS_VERIFY
+      - KUBERNETES_SERVICE_ACCOUNT_TOKEN
+      - KUBERNETES_CA_FILE
+      
+      # Email Configuration
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_SECURE
+      - SMTP_USERNAME
+      - SMTP_PASSWORD
+      
+      # JIRA Integration
+      - JIRA_HOST
+      - JIRA_TOKEN
+      
+      # Scaffolder Configuration
+      - SCAFFOLDER_DEFAULT_AUTHOR_NAME
+      - SCAFFOLDER_DEFAULT_AUTHOR_EMAIL
     volumes:
       - ./app-config.yaml:/app/app-config.yaml:ro
     healthcheck:

@@ -1,0 +1,135 @@
+# WebApplication CRD for IDP Platform
+# This leverages the platform's custom operator for automated deployment
+apiVersion: idp.platform/v1alpha1
+kind: WebApplication
+metadata:
+  name: backstage
+  namespace: backstage
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/part-of: idp-platform
+spec:
+  # Application Configuration
+  name: backstage
+  description: "Backstage Developer Portal for IDP Platform"
+  owner: "platform-team"
+  
+  # Container Configuration
+  containers:
+  - name: backend
+    image: "idp/backstage-backend:latest"
+    ports:
+    - name: backend
+      port: 7007
+      protocol: TCP
+    env:
+    - name: NODE_ENV
+      value: production
+    - name: NODE_OPTIONS
+      value: "--no-node-snapshot"
+    envFrom:
+    - secretRef:
+        name: backstage-secrets
+    - configMapRef:
+        name: backstage-env-config
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+    readinessProbe:
+      httpGet:
+        path: /api/unleash-feature-flags/health/status
+        port: backend
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    livenessProbe:
+      httpGet:
+        path: /api/unleash-feature-flags/health/status
+        port: backend
+      initialDelaySeconds: 60
+      periodSeconds: 30
+    volumeMounts:
+    - name: app-config
+      mountPath: /app/app-config.yaml
+      subPath: app-config.yaml
+      readOnly: true
+  
+  - name: frontend
+    image: "idp/backstage-frontend:latest"
+    ports:
+    - name: frontend
+      port: 3000
+      protocol: TCP
+    env:
+    - name: BACKEND_URL
+      value: "http://backstage-backend:7007"
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: frontend
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: frontend
+      initialDelaySeconds: 30
+      periodSeconds: 30
+
+  # Networking Configuration
+  networking:
+    hostname: "backstage.idp-platform.local"
+    tls: true
+    routes:
+    - path: "/api/"
+      service: backend
+      port: 7007
+    - path: "/"
+      service: frontend
+      port: 3000
+
+  # Scaling Configuration
+  scaling:
+    replicas: 2
+    horizontalPodAutoscaler:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 70
+      targetMemoryUtilizationPercentage: 80
+
+  # Storage Configuration
+  volumes:
+  - name: app-config
+    configMap:
+      name: backstage-config
+
+  # Security Configuration
+  security:
+    serviceAccount: backstage-backend
+    runAsNonRoot: true
+    runAsUser: 1001
+    fsGroup: 1001
+
+  # Monitoring Configuration
+  monitoring:
+    enabled: true
+    metrics:
+      enabled: true
+      path: /metrics
+      port: 7007
+    logging:
+      enabled: true
+      level: info
+    tracing:
+      enabled: true

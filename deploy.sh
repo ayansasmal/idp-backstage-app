@@ -55,6 +55,31 @@ EXAMPLES:
   ./deploy.sh backend-only -d       # Run backend only in background
   ./deploy.sh build-only             # Just build the containers
 
+KUBERNETES DEPLOYMENT:
+  For production Kubernetes deployment on the IDP platform:
+    ./k8s-deploy.sh webapplication   # Deploy using WebApplication CRD (recommended)
+    ./k8s-deploy.sh deploy            # Deploy using standard Kubernetes manifests
+    ./k8s-deploy.sh build             # Build images using Argo Workflows
+
+  See K8S-DEPLOYMENT.md for detailed Kubernetes deployment guide.
+
+ENVIRONMENT CONFIGURATION:
+  The application requires various environment variables for proper operation.
+  
+  REQUIRED for OAuth2/GitHub integration:
+    - BACKEND_SECRET (at least 32 characters)
+    - GITHUB_TOKEN, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+  
+  For external AWS RDS:
+    - POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
+  
+  Setup options:
+    1. Copy .env.example to .env and fill in your values
+    2. Export environment variables in your shell
+    3. Use your platform's secret management (recommended for production)
+  
+  See .env.example for complete list of available configuration options.
+
 EOF
 }
 
@@ -106,6 +131,37 @@ if [[ -z "$DEPLOYMENT_TYPE" ]]; then
     show_help
     exit 1
 fi
+
+# Check for important environment variables
+check_env_vars() {
+    local missing_vars=()
+    
+    # Check for critical OAuth2/GitHub variables
+    [[ -z "$BACKEND_SECRET" ]] && missing_vars+=("BACKEND_SECRET")
+    [[ -z "$GITHUB_TOKEN" ]] && missing_vars+=("GITHUB_TOKEN") 
+    [[ -z "$GITHUB_CLIENT_ID" ]] && missing_vars+=("GITHUB_CLIENT_ID")
+    [[ -z "$GITHUB_CLIENT_SECRET" ]] && missing_vars+=("GITHUB_CLIENT_SECRET")
+    
+    if [[ ${#missing_vars[@]} -gt 0 ]]; then
+        print_warning "Missing important environment variables:"
+        for var in "${missing_vars[@]}"; do
+            print_warning "  - $var"
+        done
+        print_warning "OAuth2/GitHub integration may not work properly."
+        print_warning "Consider creating a .env file from .env.example"
+        echo
+    fi
+    
+    # Check for database configuration
+    if [[ -n "$POSTGRES_HOST" ]]; then
+        print_status "Using external database: $POSTGRES_HOST"
+    else
+        print_status "No POSTGRES_HOST set - using application defaults"
+    fi
+}
+
+# Check environment variables before deployment
+check_env_vars
 
 # Clean up existing containers and images if requested
 if [[ "$CLEAN" == true ]]; then

@@ -1,0 +1,59 @@
+# Istio VirtualService for IDP platform integration
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: backstage
+  namespace: backstage
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: idp-platform
+spec:
+  hosts:
+  - backstage.idp-platform.local
+  gateways:
+  - istio-system/idp-platform-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /api/
+    route:
+    - destination:
+        host: backstage-backend.backstage.svc.cluster.local
+        port:
+          number: 7007
+    timeout: 300s
+    headers:
+      request:
+        set:
+          x-forwarded-proto: https
+          x-forwarded-host: backstage.idp-platform.local
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: backstage-frontend.backstage.svc.cluster.local
+        port:
+          number: 3000
+    timeout: 30s
+    headers:
+      request:
+        set:
+          x-forwarded-proto: https
+          x-forwarded-host: backstage.idp-platform.local
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: backstage
+  namespace: backstage
+  labels:
+    app.kubernetes.io/name: backstage
+    app.kubernetes.io/component: networking
+    app.kubernetes.io/part-of: idp-platform
+spec:
+  host: "*.backstage.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
