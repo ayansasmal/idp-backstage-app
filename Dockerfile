@@ -19,22 +19,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Set working directory
 WORKDIR /app
 
-# Copy package files for workspace resolution
+# Copy package files and source code for workspace resolution
 COPY package.json yarn.lock backstage.json ./
-
-# Copy all package.json files for workspace resolution
-COPY packages/*/package.json ./packages/*/
-COPY plugins/*/package.json ./plugins/*/
+COPY . .
 
 # Enable Corepack for modern Yarn
 RUN corepack enable
 
-# Install dependencies
+# Install dependencies 
 RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
-    yarn install --immutable
-
-# Copy source code
-COPY . .
+    yarn install
 
 # Build the application (both frontend and backend)
 RUN yarn tsc && yarn build:all

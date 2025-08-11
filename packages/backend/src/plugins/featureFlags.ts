@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import fetch from 'node-fetch';
 
 const unleashUrl = process.env.UNLEASH_URL;
 const unleashApiToken = process.env.UNLEASH_API_TOKEN;
 
-export const featureFlagsRouter = Router();
+export const featureFlagsRouter: RouterType = Router();
 
 featureFlagsRouter.get('/', async (_req, res) => {
     const headers: Record<string, string> = {};
