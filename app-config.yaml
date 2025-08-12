@@ -204,17 +204,12 @@ argocd:
 
 # Argo Workflows Integration
 argoWorkflows:
-  instances:
-    - name: argo-workflows-production
-      url: ${ARGO_WORKFLOWS_SERVER_URL:-https://argo-workflows.idp-platform.local}
-      authProvider: "bearer"
-      token: ${ARGO_WORKFLOWS_AUTH_TOKEN}
-      namespace: ${ARGO_WORKFLOWS_NAMESPACE:-argo}
-    - name: argo-workflows-staging
-      url: ${ARGO_WORKFLOWS_STAGING_SERVER_URL:-https://argo-workflows-staging.idp-platform.local}
-      authProvider: "bearer"
-      token: ${ARGO_WORKFLOWS_STAGING_AUTH_TOKEN}
-      namespace: ${ARGO_WORKFLOWS_STAGING_NAMESPACE:-argo-staging}
+  enabled: ${ARGO_WORKFLOWS_ENABLED:-true}
+  url: ${ARGO_WORKFLOWS_SERVER_URL:-https://argo-workflows.idp-platform.local}
+  token: ${ARGO_WORKFLOWS_AUTH_TOKEN}
+  username: ${ARGO_WORKFLOWS_USERNAME:-admin}
+  password: ${ARGO_WORKFLOWS_PASSWORD}
+  namespace: ${ARGO_WORKFLOWS_NAMESPACE:-argo}
 
 # Grafana Integration
 grafana:

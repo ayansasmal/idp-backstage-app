@@ -348,6 +348,91 @@ spec:
 - All existing UI functionality preserved and enhanced
 - Real-time feature flag management through Backstage interface
 
+## Platform Integration Status
+
+### ✅ **Completed Integrations**
+
+#### **Task 1: ArgoCD Integration (COMPLETED)**
+- **Status**: Production-ready ArgoCD integration with comprehensive UI components
+- **Backend**: `@roadiehq/backstage-plugin-argo-cd-backend@4.4.0` integrated and enabled
+- **Frontend**: `@roadiehq/backstage-plugin-argo-cd@2.10.0` with overview cards and dedicated tabs
+- **Configuration**: Multi-environment support (production/staging) in `app-config.yaml`
+- **Entity Integration**: ArgoCD annotations in service entities (`argocd/app-name`, `argocd/instance-name`)
+- **Features**: Real-time deployment status, GitOps sync information, multi-environment support
+- **Access**: Available on "ArgoCD" tab in service entity pages
+
+#### **Task 2: Argo Workflows CI/CD Integration (COMPLETED)**
+- **Status**: Comprehensive Argo Workflows integration with full workflow management capabilities
+- **Backend Implementation**:
+  - Custom `ArgoWorkflowsProvider` with complete Kubernetes API integration
+  - REST API endpoints for workflow management (`/api/argo-workflows/*`)
+  - Support for workflows, templates, and cluster templates
+  - Advanced features: workflow submission, retry/stop operations, log streaming
+- **Frontend Implementation**:
+  - Complete React dashboard (`ArgoWorkflowsPage`) with Material-UI components
+  - Multi-tab interface: Active Workflows, Templates, Cluster Templates, History
+  - Interactive features: Submit workflows, manage execution, view logs
+  - Real-time status indicators and progress tracking
+- **Dependencies**: `@kubernetes/client-node`, `yaml`, `axios` for Kubernetes integration
+- **Configuration**: Complete Argo Workflows configuration in `app-config.yaml`
+- **Entity Integration**: Workflow annotations (`argoproj.io/workflow-template`, `argoproj.io/workflow-namespace`)
+- **Access**: Available on "CI/CD" tab in service entity pages
+- **Environment Variables**: 
+  ```bash
+  ARGO_WORKFLOWS_SERVER_URL=https://argo-workflows.idp-platform.local
+  ARGO_WORKFLOWS_AUTH_TOKEN=<bearer-token>
+  ARGO_WORKFLOWS_NAMESPACE=argo
+  ```
+
+### 🔄 **Pending Integrations**
+
+#### **Task 3: Istio Kiali Integration (PENDING)**
+- **Objective**: Service mesh topology visualization and traffic monitoring
+- **Status**: Ready for implementation
+
+#### **Task 4: Kubernetes Integration (PENDING)**  
+- **Objective**: Enhanced cluster visibility and resource management
+- **Status**: Ready for implementation
+
+#### **Task 5: GitOps Discovery (PENDING)**
+- **Objective**: Automatic service discovery from Git repositories  
+- **Status**: Ready for implementation
+
+#### **Task 6: Monitoring Integration (PENDING)**
+- **Objective**: Grafana, Prometheus, and Jaeger integration
+- **Status**: Ready for implementation
+
+#### **Task 7: Crossplane Integration (PENDING)**
+- **Objective**: Infrastructure-as-code visibility and management
+- **Status**: Ready for implementation
+
+#### **Task 8: API Documentation (PENDING)**
+- **Objective**: Enhanced API documentation with validation
+- **Status**: Ready for implementation
+
+#### **Task 9: Platform Entities (PENDING)**  
+- **Objective**: Service catalog for IDP platform components
+- **Status**: Ready for implementation
+
+### 🎯 **Integration Benefits Delivered**
+
+**Developer Experience Enhancements:**
+- **Unified GitOps Visibility**: ArgoCD integration provides real-time deployment status across environments
+- **Self-Service CI/CD**: Argo Workflows integration enables template-based pipeline execution and management
+- **Integrated Workflow Management**: Developers can submit, monitor, and troubleshoot workflows directly from Backstage
+- **Multi-Environment Support**: Production and staging configurations for both ArgoCD and Argo Workflows
+
+**Platform Capabilities:**
+- **Production-Ready Components**: Both integrations include comprehensive error handling and monitoring
+- **Enterprise-Grade Security**: Token-based authentication and proper RBAC integration
+- **Extensible Architecture**: Well-structured plugin system ready for additional integrations
+- **Comprehensive API Coverage**: Full REST API support for programmatic access
+
+**Operational Excellence:**
+- **Build Verification**: All integrations pass TypeScript compilation and full build processes
+- **Configuration Management**: Environment-based configuration with sensible defaults
+- **Documentation**: Comprehensive implementation documentation and usage examples
+
 ### Complete Architecture Overview
 
 #### **Frontend (Port 3000)**

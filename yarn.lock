@@ -5094,7 +5094,7 @@
     chardet "^2.1.0"
     iconv-lite "^0.6.3"
 
-"@internal/plugin-feature-flags@file:plugins/feature-flags":
+"@internal/plugin-feature-flags@link:plugins/feature-flags":
   version "0.1.0"
   dependencies:
     "@backstage/core-components" "^0.17.4"
@@ -5108,11 +5108,11 @@
   version "0.1.0"
   dependencies:
     "@backstage/backend-common" "^0.25.0"
-    "@backstage/backend-plugin-api" "^1.0.0"
-    "@backstage/config" "^1.2.0"
+    "@backstage/backend-plugin-api" "^1.4.1"
+    "@backstage/config" "^1.3.3"
     "@backstage/errors" "^1.2.4"
     "@backstage/types" "^1.1.1"
-    express "^4.17.1"
+    express "^5.1.0"
     express-promise-router "^4.1.0"
     node-fetch "^3.3.2"
     unleash-client "^6.6.0"
@@ -5709,6 +5709,28 @@
     tar "^7.0.0"
     tmp-promise "^3.0.2"
     ws "^8.18.0"
+
+"@kubernetes/client-node@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@kubernetes/client-node/-/client-node-1.3.0.tgz#6088bc1c4f6bb01f52e6e933f35008feb39fe909"
+  integrity sha512-IE0yrIpOT97YS5fg2QpzmPzm8Wmcdf4ueWMn+FiJSI3jgTTQT1u+LUhoYpdfhdHAVxdrNsaBg2C0UXSnOgMoCQ==
+  dependencies:
+    "@types/js-yaml" "^4.0.1"
+    "@types/node" "^22.0.0"
+    "@types/node-fetch" "^2.6.9"
+    "@types/stream-buffers" "^3.0.3"
+    form-data "^4.0.0"
+    hpagent "^1.2.0"
+    isomorphic-ws "^5.0.0"
+    js-yaml "^4.1.0"
+    jsonpath-plus "^10.3.0"
+    node-fetch "^2.6.9"
+    openid-client "^6.1.3"
+    rfc4648 "^1.3.0"
+    socks-proxy-agent "^8.0.4"
+    stream-buffers "^3.0.2"
+    tar-fs "^3.0.8"
+    ws "^8.18.2"
 
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.5"
@@ -10722,7 +10744,7 @@
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.7.tgz#50ae4353eaaddc04044279812f52c8c65857dbcb"
   integrity sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==
 
-"@types/react-dom@*", "@types/react-dom@^18", "@types/react-dom@^18.0.0":
+"@types/react-dom@*", "@types/react-dom@^18.0.0":
   version "18.3.7"
   resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-18.3.7.tgz#b89ddf2cd83b4feafcc4e2ea41afdfb95a0d194f"
   integrity sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ==
@@ -10749,7 +10771,7 @@
   resolved "https://registry.yarnpkg.com/@types/react-transition-group/-/react-transition-group-4.4.12.tgz#b5d76568485b02a307238270bfe96cb51ee2a044"
   integrity sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w==
 
-"@types/react@*", "@types/react@^18":
+"@types/react@*":
   version "18.3.23"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-18.3.23.tgz#86ae6f6b95a48c418fecdaccc8069e0fbb63696a"
   integrity sha512-/LDXMQh55EzZQ0uVAZmKKhfENivEvWz6E+EYzh+/MCjMhNsotd+ZHhBGIjFDTi6+fz0OhQQQLbTgdQIxxCsC0w==
@@ -11630,7 +11652,7 @@ apg-lite@^1.0.3, apg-lite@^1.0.4:
     "@backstage/plugin-user-settings" "^0.8.24"
     "@backstage/theme" "^0.6.7"
     "@backstage/ui" "^0.6.0"
-    "@internal/plugin-feature-flags" "file:plugins/feature-flags"
+    "@internal/plugin-feature-flags" "link:plugins/feature-flags"
     "@material-ui/core" "^4.12.2"
     "@material-ui/icons" "^4.9.1"
     "@roadiehq/backstage-plugin-argo-cd" "^2.10.0"
@@ -11984,7 +12006,7 @@ axios-cached-dns-resolve@0.5.2:
     pino "^5.12.2"
     pino-pretty "^2.6.0"
 
-axios@^1.0.0, axios@^1.7.4, axios@^1.9.0:
+axios@^1.0.0, axios@^1.11.0, axios@^1.7.4, axios@^1.9.0:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.11.0.tgz#c2ec219e35e414c025b2095e8b8280278478fdb6"
   integrity sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==
@@ -24207,7 +24229,7 @@ tar-fs@^2.0.0, tar-fs@~2.1.2:
     pump "^3.0.0"
     tar-stream "^2.1.4"
 
-tar-fs@^3.0.7:
+tar-fs@^3.0.7, tar-fs@^3.0.8:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-3.1.0.tgz#4675e2254d81410e609d91581a762608de999d25"
   integrity sha512-5Mty5y/sOF1YWj1J6GiBodjlDc05CUR8PKXrsnFAiSG0xA+GHeWLovaZPYUDXkH/1iKRf2+M5+OrRgzC7O9b7w==
@@ -25744,7 +25766,7 @@ write-file-atomic@^4.0.2:
     imurmurhash "^0.1.4"
     signal-exit "^3.0.7"
 
-ws@*, ws@^8.11.0, ws@^8.17.1, ws@^8.18.0, ws@^8.18.3, ws@^8.8.0:
+ws@*, ws@^8.11.0, ws@^8.17.1, ws@^8.18.0, ws@^8.18.2, ws@^8.18.3, ws@^8.8.0:
   version "8.18.3"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.3.tgz#b56b88abffde62791c639170400c93dcb0c95472"
   integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
@@ -25823,7 +25845,7 @@ yaml@^1.10.0, yaml@^1.10.2, yaml@^1.7.2:
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.10.2.tgz#2301c5ffbf12b467de8da2333a459e29e7920e4b"
   integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
 
-yaml@^2.0.0, yaml@^2.2.1, yaml@^2.2.2:
+yaml@^2.0.0, yaml@^2.2.1, yaml@^2.2.2, yaml@^2.8.1:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.8.1.tgz#1870aa02b631f7e8328b93f8bc574fac5d6c4d79"
   integrity sha512-lcYcMxX2PO9XMGvAJkJ3OsNMw+/7FKes7/hgerGUYWIoWu5j/+YQqcZr5JnPZWzOsEBgMbSbiSTn/dv/69Mkpw==

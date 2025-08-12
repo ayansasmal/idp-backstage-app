@@ -52,8 +52,11 @@ backend.add(import('@backstage/plugin-permission-backend-module-allow-all-policy
 // kubernetes - temporarily disabled for simpler local development
 // backend.add(import('@backstage/plugin-kubernetes-backend'));
 
-// argocd plugin - temporarily disabled for simpler local development  
-// backend.add(import('@roadiehq/backstage-plugin-argo-cd-backend'));
+// argocd plugin
+backend.add(import('@roadiehq/backstage-plugin-argo-cd-backend'));
+
+// argo workflows plugin
+backend.add(import('./plugins/argoWorkflows'));
 
 // unleash feature flags plugin
 backend.add(import('@internal/plugin-unleash-feature-flags-backend'));

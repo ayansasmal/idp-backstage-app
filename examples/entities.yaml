@@ -36,6 +36,9 @@ metadata:
     argocd/instance-name: argocd-prod
     # Kubernetes integration
     backstage.io/kubernetes-id: backstage
+    # Argo Workflows integration
+    argoproj.io/workflow-template: backstage-ci-cd
+    argoproj.io/workflow-namespace: argo
     # Source location
     backstage.io/source-location: url:https://github.com/ayansasmal/idp-backstage-app
 spec:

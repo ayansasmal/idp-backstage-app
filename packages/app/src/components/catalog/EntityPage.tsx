@@ -64,6 +64,8 @@ import {
   isArgocdAvailable,
 } from '@roadiehq/backstage-plugin-argo-cd';
 
+import { ArgoWorkflowsPage } from '../argoWorkflows/ArgoWorkflowsPage';
+
 const techdocsContent = (
   <EntityTechdocsContent>
     <TechDocsAddons>
@@ -164,7 +166,7 @@ const serviceEntityPage = (
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/ci-cd" title="CI/CD">
-      {cicdContent}
+      <ArgoWorkflowsPage />
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/argocd" title="ArgoCD" if={isArgocdAvailable}>
